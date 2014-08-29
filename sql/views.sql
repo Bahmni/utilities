@@ -12,9 +12,22 @@ and concept.date_retired is null
 and concept_name.voided = false
 and concept_name.concept_name_type = 'FULLY_SPECIFIED';
 
+create or replace view concept_answer_view as
+select
+question_concept_view.concept_id as question_concept_id,
+question_concept_view.concept_class_name as question_concept_class_name,
+question_concept_view.concept_name as question_concept_name,
+answer_concept_view.concept_id as answer_concept_id,
+answer_concept_view.concept_class_name as answer_concept_class_name,
+answer_concept_view.concept_name as answer_concept_name
+from concept_view question_concept_view, concept_view answer_concept_view, concept_answer
+where
+question_concept_view.concept_id = concept_answer.concept_id
+and answer_concept_view.concept_id = concept_answer.answer_concept;
+
 create or replace view text_obs_view as
 select
-concept_view.concept_name as concept_name,
+concept_view.*,
 obs.value_text as value
 from obs, concept_view
 where
