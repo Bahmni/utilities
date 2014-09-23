@@ -1,6 +1,6 @@
 -- Parameters
 SET @start_date = '2014-09-01';
-SET @end_date = '2014-09-30';
+SET @end_date = '2014-10-01';
 
 -- Constants
 SET @report_group_name = 'Inpatient Discharge Reports';

@@ -33,10 +33,12 @@ SELECT * FROM coded_obs
 WHERE coded_obs.voided = 0;
 
 CREATE OR REPLACE VIEW encounter_data AS
-SELECT encounter.encounter_id, encounter.patient_id, encounter.visit_id, visit.visit_type_id, visit_type.name visit_type
+SELECT encounter.encounter_id, encounter.patient_id, encounter.visit_id, visit.visit_type_id, visit_type.name visit_type,
+	   encounter.encounter_type as encounter_type_id, encounter_type.name as encounter_type, encounter_datetime
 FROM encounter
-JOIN visit ON encounter.visit_id = visit.visit_id
-JOIN visit_type ON visit.visit_type_id = visit_type.visit_type_id;
+JOIN encounter_type ON encounter_type.encounter_type_id = encounter.encounter_type
+LEFT OUTER JOIN visit ON encounter.visit_id = visit.visit_id
+LEFT OUTER JOIN visit_type ON visit.visit_type_id = visit_type.visit_type_id;
 
 CREATE OR REPLACE VIEW patient_diagnosis AS
 SELECT distinct diagnois_obs.value_coded AS diagnois_concept_id, diagnois_obs.person_id, diagnois_obs.value AS name,
@@ -54,6 +56,12 @@ JOIN valid_coded_obs AS certainity_obs ON certainity_obs.obs_group_id = diagnosi
 JOIN valid_coded_obs AS order_obs ON order_obs.obs_group_id = diagnosis_parent_obs.obs_id AND order_obs.name = 'Diagnosis Order'
 LEFT OUTER JOIN valid_coded_obs AS status_obs ON status_obs.obs_group_id = diagnosis_parent_obs.obs_id AND status_obs.name = 'Bahmni Diagnosis Status'
 LEFT OUTER JOIN encounter_data ON encounter_data.encounter_id = diagnois_obs.encounter_id;
+
+CREATE OR REPLACE VIEW valid_diagnosis AS
+SELECT * FROM patient_diagnosis WHERE patient_diagnosis.status IS NULL OR patient_diagnosis.status != 'Ruled Out Diagnosis';
+
+CREATE OR REPLACE VIEW valid_confirmed_diagnosis AS
+SELECT * FROM valid_diagnosis WHERE valid_diagnosis.certainity = 'Confirmed';
 
 CREATE OR REPLACE VIEW diagnosis AS
 SELECT * FROM concept_data WHERE class = 'Diagnosis';
