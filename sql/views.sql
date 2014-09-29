@@ -86,7 +86,6 @@ concept_children_view.child_concept_name as name
 from concept_children_view
 where parent_concept_name = 'Radiology';
 
--- This would need refactoring when we change the model
 create or replace view radiology_result_view as
 select
 file_obs.person_id as person_id,
@@ -98,6 +97,7 @@ file_obs.concept_name = 'Document' and
 file_obs.obs_group_id = radiology_obs.obs_id and
 radiology_obs.concept_id = radiology_view.concept_id;
 
+-- in progress, use if it is useful
 create or replace view patient_diagnosis_view as
 select
 obs.obs_group_id,
@@ -112,17 +112,3 @@ obs.concept_id = question_concept.concept_id and
 obs.value_coded = answer_concept.concept_id
 group by obs.obs_group_id
 order by obs.obs_group_id;
-
-select distinct(file_name) from radiology_result_view, obs_view
-where radiology_result_view.person_id = obs_view.person_id and
-obs_view.concept_name = 'BMI Status' and
-obs_view.value_text in ('Very Severely Underweight', 'Underweight', 'Severely Underweight') and
-radiology_result_view.name like '%Chest PA%' limit 50
-INTO OUTFILE '/tmp/xray_file_for_low_bmi.csv'
-FIELDS TERMINATED BY ','
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n';
-
-
-explain  select count(*) from coded_obs_view as diagnosis_obs
-join coded_obs_view as diagnosis_attributes_obs on diagnosis_obs.concept_name = 'Coded Diagnosis' and diagnosis_obs.obs_group_id = diagnosis_attributes_obs.obs_group_id;
