@@ -56,7 +56,10 @@ SELECT
 encounter.encounter_id,
 encounter.patient_id,
 encounter.visit_id,
+encounter.location_id,
+location.name as location_name,
 visit.visit_type_id,
+visit.date_started as visit_date_started,
 visit_type.name visit_type_name,
 encounter.encounter_type as encounter_type_id,
 encounter_type.name as encounter_type_name, 
@@ -64,7 +67,16 @@ encounter_datetime
 FROM encounter
 JOIN encounter_type ON encounter_type.encounter_type_id = encounter.encounter_type
 LEFT OUTER JOIN visit ON encounter.visit_id = visit.visit_id
-LEFT OUTER JOIN visit_type ON visit.visit_type_id = visit_type.visit_type_id;
+LEFT OUTER JOIN visit_type ON visit.visit_type_id = visit_type.visit_type_id
+LEFT OUTER JOIN location ON encounter.location_id = location.location_id;
+
+CREATE OR REPLACE VIEW visit_view AS
+SELECT 
+visit.*,
+visit_type.name visit_type_name
+FROM visit
+JOIN visit_type ON visit.visit_type_id = visit_type.visit_type_id;
+
 
 CREATE OR REPLACE VIEW patient_diagnosis_view AS
 SELECT distinct 
