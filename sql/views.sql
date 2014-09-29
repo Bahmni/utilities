@@ -52,8 +52,15 @@ SELECT * FROM coded_obs_view
 WHERE coded_obs_view.voided = 0;
 
 CREATE OR REPLACE VIEW encounter_view AS
-SELECT encounter.encounter_id, encounter.patient_id, encounter.visit_id, visit.visit_type_id, visit_type.name visit_type,
-	   encounter.encounter_type as encounter_type_id, encounter_type.name as encounter_type, encounter_datetime
+SELECT 
+encounter.encounter_id,
+encounter.patient_id,
+encounter.visit_id,
+visit.visit_type_id,
+visit_type.name visit_type_name,
+encounter.encounter_type as encounter_type_id,
+encounter_type.name as encounter_type_name, 
+encounter_datetime
 FROM encounter
 JOIN encounter_type ON encounter_type.encounter_type_id = encounter.encounter_type
 LEFT OUTER JOIN visit ON encounter.visit_id = visit.visit_id
@@ -70,7 +77,7 @@ status_obs.value_concept_full_name AS status,
 diagnois_obs.obs_datetime,
 encounter_view.encounter_id,
 encounter_view.visit_id,
-encounter_view.visit_type,
+encounter_view.visit_type_name,
 encounter_view.visit_type_id
 FROM valid_coded_obs_view AS diagnois_obs
 JOIN obs AS diagnosis_parent_obs ON diagnois_obs.concept_full_name = 'Coded Diagnosis' AND diagnois_obs.obs_group_id = diagnosis_parent_obs.obs_id
