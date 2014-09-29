@@ -9,8 +9,8 @@ SET @inpatient_outcome_concept_name = 'Inpatient Outcome';
 -- Query
 SELECT 	distinct answer.concept_full_name,
 		possible_age_group.name AS age_group,
-		IF(inpatient_outcome_obs.age_group_id IS NULL, 0, SUM(CASE WHEN inpatient_outcome_obs.gender = 'F' THEN 1 ELSE 0 END)) AS female,
-		IF(inpatient_outcome_obs.age_group_id IS NULL, 0, SUM(CASE WHEN inpatient_outcome_obs.gender = 'M' THEN 1 ELSE 0 END)) AS male,
+		IF(inpatient_outcome_obs.age_group_id IS NULL, 0, SUM(IF(inpatient_outcome_obs.gender = 'F', 1, 0))) AS female,
+		IF(inpatient_outcome_obs.age_group_id IS NULL, 0, SUM(IF(inpatient_outcome_obs.gender = 'M', 1, 0))) AS male,
 		IF(inpatient_outcome_obs.age_group_id IS NULL, 0, COUNT(person_id)) as total
 FROM concept_view as question
 JOIN concept_answer ON question.concept_id = concept_answer.concept_id

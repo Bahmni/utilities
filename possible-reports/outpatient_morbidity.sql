@@ -7,8 +7,8 @@ SET @admission_encounter_type = 'ADMISSION';
 
 -- Query
 SELECT diagnosis_concept_view.concept_full_name, diagnosis_concept_view.icd10_code, concept_reference_term_map_view.concept_reference_term_name AS group_name,
-SUM(CASE WHEN person.gender = 'F' THEN 1 ELSE 0 END) AS female,
-SUM(CASE WHEN person.gender = 'M' THEN 1 ELSE 0 END) AS male
+SUM(IF(person.gender = 'F', 1, 0)) AS female,
+SUM(IF(person.gender = 'M', 1, 0)) AS male
 FROM diagnosis_concept_view
 LEFT OUTER JOIN concept_reference_term_map_view ON concept_reference_term_map_view.concept_id = diagnosis_concept_view.concept_id
 			AND concept_reference_term_map_view.concept_reference_source_name = 'ICD 10 - WHO' AND concept_reference_term_map_view.concept_map_type_name = 'NARROWER-THAN'
