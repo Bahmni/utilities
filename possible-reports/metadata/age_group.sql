@@ -11,7 +11,6 @@ sort_order INT NOT NULL DEFAULT 0
 );
 
 -- Meta Data
--- Select * from possible_age_group
 INSERT INTO possible_age_group(name, report_group_name, min_years, min_days, max_years , max_days, sort_order) 
 			VALUES('≤ 28 Days', 'Inpatient Discharge Reports', 0, 0, 0, 28, 1);
 INSERT INTO possible_age_group(name, report_group_name, min_years, min_days, max_years , max_days, sort_order)
