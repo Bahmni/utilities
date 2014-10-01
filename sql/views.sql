@@ -155,8 +155,10 @@ obs.obs_id as obs_id,
 obs.value_text as value_text,
 obs.value_datetime as value_datetime,
 obs.value_numeric as value_numeric,
+obs.value_coded as value_coded,
 obs.obs_group_id as obs_group_id,
-obs.person_id as person_id
+obs.person_id as person_id,
+obs.encounter_id as encounter_id
 from obs, concept_view
 where
 obs.concept_id = concept_view.concept_id;
