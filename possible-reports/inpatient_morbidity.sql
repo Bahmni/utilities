@@ -9,8 +9,8 @@ SET @report_group_name = 'Inpatient Discharge Reports';
 -- Query for disease age group count
 SELECT diagnosis_concept_view.icd10_code, diagnosis_concept_view.concept_full_name as disease,
 observed_age_group.name AS age_group,
-SUM(CASE WHEN person.gender = 'F' THEN 1 ELSE 0 END) AS female,
-SUM(CASE WHEN person.gender = 'M' THEN 1 ELSE 0 END) AS male
+SUM(IF(person.gender = 'F', 1, 0)) AS female,
+SUM(IF(person.gender = 'M', 1, 0)) AS male
 FROM diagnosis_concept_view
 JOIN confirmed_patient_diagnosis_view ON confirmed_patient_diagnosis_view.diagnois_concept_id = diagnosis_concept_view.concept_id 
 JOIN person ON confirmed_patient_diagnosis_view.person_id = person.person_id
@@ -25,8 +25,8 @@ ORDER BY disease;
 
 -- Query for disease and death count
 SELECT diagnosis_concept_view.icd10_code, diagnosis_concept_view.concept_full_name as disease,
-SUM(CASE WHEN person.gender = 'F' THEN 1 ELSE 0 END) AS female_death,
-SUM(CASE WHEN person.gender = 'M' THEN 1 ELSE 0 END) AS male_death
+SUM(IF(person.gender = 'F', 1, 0)) AS female_death,
+SUM(IF(person.gender = 'M', 1, 0)) AS male_death
 FROM diagnosis_concept_view
 JOIN confirmed_patient_diagnosis_view ON confirmed_patient_diagnosis_view.diagnois_concept_id = diagnosis_concept_view.concept_id 
 JOIN person ON confirmed_patient_diagnosis_view.person_id = person.person_id AND person.dead = 1
