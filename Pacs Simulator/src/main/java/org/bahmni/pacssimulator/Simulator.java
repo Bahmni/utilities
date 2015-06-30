@@ -26,7 +26,9 @@ public class Simulator {
     public static void main(String[] args) throws Exception {
         int port = 9000;
         int timeout = 300000;
-        String orthancPostInstanceUrl = null;
+        String orthancPostInstanceUrl = "http://192.168.33.10:8042/instances";
+
+        new OrderMessageHandler(orthancPostInstanceUrl).post("U_2015_05_26_14_18_35.dcm");
 
         if (args.length > 0) {
             if (args.length >= 1)
@@ -38,13 +40,14 @@ public class Simulator {
         }
 
         Simulator simulator = new Simulator(port, timeout, orthancPostInstanceUrl);
+
         simulator.startServer();
     }
 
     private void startServer() throws InterruptedException, UnknownHostException {
         HapiContext hapiContext = new DefaultHapiContext();
         HL7Service server = hapiContext.newServer(port, false);
-        server.registerApplication("ORM", "001", new ORMHandler());
+        server.registerApplication("ORM", "O01", new OrderMessageHandler(orthancPostInstanceUrl));
         server.setExceptionHandler(new ErrorHandler());
         server.registerConnectionListener(
                 new ConnectionListener() {

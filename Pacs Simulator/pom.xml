@@ -13,19 +13,24 @@
         <slf4jVersion>1.7.12</slf4jVersion>
         <hapi-base.version>2.2</hapi-base.version>
         <dcm4cheVersion>2.0.28</dcm4cheVersion>
-        <dcm4che2Version>2.0.23</dcm4che2Version>
+        <dcm4che2Version>2.0.25</dcm4che2Version>
     </properties>
 
 
     <dependencies>
         <dependency>
-            <groupId>ca.uhn.hapi</groupId>
-            <artifactId>hapi-base</artifactId>
-            <version>${hapi-base.version}</version>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>4.5</version>
         </dependency>
         <dependency>
             <groupId>ca.uhn.hapi</groupId>
-            <artifactId>hapi-structures-v23</artifactId>
+            <artifactId>hapi-base</artifactId>
             <version>${hapi-base.version}</version>
         </dependency>
         <dependency>
