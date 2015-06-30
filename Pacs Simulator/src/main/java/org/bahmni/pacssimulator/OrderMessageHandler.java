@@ -3,24 +3,13 @@ package org.bahmni.pacssimulator;
 import ca.uhn.hl7v2.HL7Exception;
 import ca.uhn.hl7v2.model.Message;
 import ca.uhn.hl7v2.model.v25.message.ORM_O01;
-import ca.uhn.hl7v2.parser.PipeParser;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.mime.HttpMultipartMode;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.entity.mime.content.FileBody;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.Map;
 
 /**
@@ -31,31 +20,10 @@ import java.util.Map;
 public class OrderMessageHandler implements ReceivingApplication {
     private static final Logger log = Logger.getLogger(OrderMessageHandler.class);
 
-    private String orthancPostInstanceUrl;
+    private OrthancClient orthancClient;
 
-    public OrderMessageHandler(String orthancPostInstanceUrl) {
-        this.orthancPostInstanceUrl = orthancPostInstanceUrl;
-    }
-
-    @Override
-    public Message processMessage(Message message, Map<String, Object> theMetadata) throws ReceivingApplicationException, HL7Exception {
-        ORM_O01 ormMessage = (ORM_O01) message;
-        String messageControlId = ormMessage.getMSH().getMessageControlID().getValue();
-        log.debug("messagecontrolid:'" + messageControlId + "'");
-
-        try {
-            post("U_2015_05_26_14_18_35.dcm");
-
-            String encodedMessage = new PipeParser().encode(message);
-            log.debug("Received message:\n" + encodedMessage + "\n\n");
-            return message.generateACK();
-        } catch (IOException e) {
-            log.error("Could not post image to Orthanc", e);
-            throw new ReceivingApplicationException(e);
-        } catch (URISyntaxException e) {
-            log.error("Could not post image to Orthanc", e);
-            throw new ReceivingApplicationException(e);
-        }
+    public OrderMessageHandler(OrthancClient orthancClient) {
+        this.orthancClient = orthancClient;
     }
 
     @Override
@@ -63,32 +31,29 @@ public class OrderMessageHandler implements ReceivingApplication {
         return message instanceof ORM_O01;
     }
 
-    public void post(String fileName) throws IOException, URISyntaxException {
-        CloseableHttpClient httpclient = HttpClients.createDefault();
+    @Override
+    public Message processMessage(Message message, Map<String, Object> theMetadata) throws ReceivingApplicationException, HL7Exception {
+        DicomFile dicomFile = new DicomFile("U_2015_05_26_14_18_35.dcm");
+        File modifiedDicomFile = null;
 
         try {
-            HttpPost httppost = new HttpPost(orthancPostInstanceUrl);
-            MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-            builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
+            ORM_O01 ormMessage = (ORM_O01) message;
+            modifiedDicomFile = dicomFile.modifyDicomAsPerOrder(ormMessage);
+            orthancClient.post(modifiedDicomFile);
+            return message.generateACK();
 
-            URL resource = ClassLoader.getSystemResource(fileName);
-            FileBody fileBody = new FileBody(new File(resource.toURI()));
-            builder.addPart("file", fileBody);
-
-            HttpEntity httpEntity = builder.build();
-            httppost.setEntity(httpEntity);
-
-            log.debug("executing request " + httppost.getRequestLine());
-            HttpResponse response = httpclient.execute(httppost);
-            HttpEntity resEntity = response.getEntity();
-
-            log.debug(response.getStatusLine());
-            if (resEntity != null) {
-                log.debug(EntityUtils.toString(resEntity));
-            }
+//            String encodedMessage = new PipeParser().encode(message);
+//            log.debug("Received message:\n" + encodedMessage + "\n\n");
+        } catch (IOException e) {
+            log.error("Could not post image to Orthanc", e);
+            throw new ReceivingApplicationException(e);
+        } catch (URISyntaxException e) {
+            log.error("Could not post image to Orthanc", e);
+            throw new ReceivingApplicationException(e);
         } finally {
-            httpclient.close();
+            if (modifiedDicomFile != null)
+                modifiedDicomFile.delete();
         }
-
     }
+
 }

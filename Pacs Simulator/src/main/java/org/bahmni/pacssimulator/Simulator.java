@@ -28,8 +28,6 @@ public class Simulator {
         int timeout = 300000;
         String orthancPostInstanceUrl = "http://192.168.33.10:8042/instances";
 
-        new OrderMessageHandler(orthancPostInstanceUrl).post("U_2015_05_26_14_18_35.dcm");
-
         if (args.length > 0) {
             if (args.length >= 1)
                 port = Integer.parseInt(args[0]);
@@ -40,14 +38,13 @@ public class Simulator {
         }
 
         Simulator simulator = new Simulator(port, timeout, orthancPostInstanceUrl);
-
         simulator.startServer();
     }
 
     private void startServer() throws InterruptedException, UnknownHostException {
         HapiContext hapiContext = new DefaultHapiContext();
         HL7Service server = hapiContext.newServer(port, false);
-        server.registerApplication("ORM", "O01", new OrderMessageHandler(orthancPostInstanceUrl));
+        server.registerApplication("ORM", "O01", new OrderMessageHandler(new OrthancClient(orthancPostInstanceUrl)));
         server.setExceptionHandler(new ErrorHandler());
         server.registerConnectionListener(
                 new ConnectionListener() {
@@ -61,10 +58,9 @@ public class Simulator {
                         log.debug("Lost connection from: " + connection.getRemoteAddress().toString());
                     }
                 });
+
         server.startAndWait();
         System.setProperty("ca.uhn.hl7v2.app.initiator.timeout", Integer.toString(timeout));
-
-        log.debug("Started server at " + Inet4Address.getLocalHost().getHostAddress() + ":" + port + " with timeout of " + timeout);
+        log.debug("Starting server at " + Inet4Address.getLocalHost().getHostAddress() + ":" + port + " with timeout of " + timeout);
     }
-
 }

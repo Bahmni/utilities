@@ -11,9 +11,9 @@ public class ErrorHandler implements ReceivingApplicationExceptionHandler {
 
     @Override
     public String processException(String incomingMessage, Map<String, Object> incomingMetadata, String outgoingMessage, Exception e) throws HL7Exception {
-        log.debug("ErrorHandler");
-        log.debug(incomingMessage);
-        log.debug(e);
+        log.error("ErrorHandler");
+        log.error(incomingMessage);
+        log.error(e);
         return "error";
     }
 }
