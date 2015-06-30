@@ -10,12 +10,11 @@ import org.dcm4che2.io.DicomOutputStream;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
@@ -30,10 +29,8 @@ public class DicomFile {
     }
 
     public File modifyDicomAsPerOrder(ORM_O01 ormMessage) throws URISyntaxException, IOException {
-        URL resource = ClassLoader.getSystemResource(fileName);
-        File inputDicomFile = new File(resource.toURI());
-
-        DicomInputStream dicomInputStream = new DicomInputStream(new FileInputStream(inputDicomFile));
+        InputStream resourceAsStream = this.getClass().getResourceAsStream(fileName);
+        DicomInputStream dicomInputStream = new DicomInputStream(ClassLoader.getSystemResourceAsStream(fileName));
         DicomObject dicomObject = dicomInputStream.readDicomObject();
 
         String patientId = ormMessage.getPATIENT().getPID().getPatientID().getIDNumber().getValue();
