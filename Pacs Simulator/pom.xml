@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.bahmni</groupId>
+    <artifactId>pacssimulator</artifactId>
+    <version>1.0-SNAPSHOT</version>
+
+    <properties>
+        <log4jVersion>1.2.17</log4jVersion>
+        <slf4jVersion>1.7.12</slf4jVersion>
+        <hapi-base.version>2.2</hapi-base.version>
+        <dcm4cheVersion>2.0.28</dcm4cheVersion>
+        <dcm4che2Version>2.0.23</dcm4che2Version>
+    </properties>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>ca.uhn.hapi</groupId>
+            <artifactId>hapi-base</artifactId>
+            <version>${hapi-base.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi</groupId>
+            <artifactId>hapi-structures-v23</artifactId>
+            <version>${hapi-base.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ca.uhn.hapi</groupId>
+            <artifactId>hapi-structures-v25</artifactId>
+            <version>${hapi-base.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4jVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>${log4jVersion}</version>
+        </dependency>
+
+        <!--Dcm4chee toolkit dependencies for dcmof, hl7snd and dcmrcv (never used)-->
+        <dependency>
+            <groupId>dcm4che</groupId>
+            <artifactId>dcm4che-net</artifactId>
+            <version>${dcm4che2Version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>dcm4che</groupId>
+            <artifactId>dcm4che-core</artifactId>
+            <version>${dcm4che2Version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>dcm4che.tool</groupId>
+            <artifactId>dcm4che-tool-dcmqr</artifactId>
+            <version>${dcm4che2Version}</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>org.bahmni.pacssimulator.Simulator</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <target>1.6</target>
+                    <source>1.6</source>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.openmrs.maven.plugins</groupId>
+                <artifactId>maven-openmrs-plugin</artifactId>
+                <version>1.0.1</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.4</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.5</version>
+                <configuration>
+                    <argLine>-Xmx512m -XX:MaxPermSize=512m</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+
+    <repositories>
+        <repository>
+            <id>dcm4che</id>
+            <name>dcm4che Repository</name>
+            <url>http://www.dcm4che.org/maven2</url>
+        </repository>
+        <repository>
+            <id>hapi-sf</id>
+            <name>HAPI Sourceforge Repository</name>
+            <url>http://hl7api.sourceforge.net/m2</url>
+        </repository>
+        <repository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>interval:10080</updatePolicy>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>sonatype-nexus-releases</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/releases</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>central</id>
+            <url>http://repo1.maven.org/maven2</url>
+            <name>Repository for dependencies</name>
+            <!--<snapshots>-->
+            <!--<enabled>true</enabled>-->
+            <!--<updatePolicy>interval:10080</updatePolicy>-->
+            <!--</snapshots>-->
+        </repository>
+        <repository>
+            <id>apache-maven-release</id>
+            <name>Apache Maven Release Repository</name>
+            <url>https://repository.apache.org/content/repositories/releases</url>
+            <!--<releases>-->
+            <!--<updatePolicy>interval:10080</updatePolicy>-->
+            <!--</releases>-->
+        </repository>
+    </repositories>
+
+</project>
