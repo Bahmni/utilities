@@ -29,6 +29,8 @@ public class Simulator {
         String orthancPostInstanceUrl = "http://192.168.33.10:8042/instances";
 
         if (args.length > 0) {
+            orthancPostInstanceUrl = null;
+
             if (args.length >= 1)
                 port = Integer.parseInt(args[0]);
             if (args.length >= 2)

@@ -24,6 +24,9 @@ public class OrthancClient {
     }
 
     public void post(File dicomFile) throws IOException, URISyntaxException {
+        if (orthancPostInstanceUrl == null || orthancPostInstanceUrl.trim().length() == 0)
+            return;
+
         CloseableHttpClient httpclient = HttpClients.createDefault();
 
         try {
@@ -38,7 +41,7 @@ public class OrthancClient {
             httppost.setEntity(httpEntity);
 
             HttpResponse response = httpclient.execute(httppost);
-            HttpEntity resEntity = response.getEntity();
+//            HttpEntity resEntity = response.getEntity();
 //            if (resEntity != null) {
 //                log.debug(EntityUtils.toString(resEntity));
 //            }
