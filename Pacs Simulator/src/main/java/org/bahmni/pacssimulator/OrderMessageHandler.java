@@ -1,8 +1,8 @@
 package org.bahmni.pacssimulator;
 
-import ca.uhn.hl7v2.HL7Exception;
-import ca.uhn.hl7v2.model.Message;
-import ca.uhn.hl7v2.model.v25.message.ORM_O01;
+import ca.uhn.hl7v2.*;
+import ca.uhn.hl7v2.model.*;
+import ca.uhn.hl7v2.model.v25.message.*;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
 import org.apache.log4j.Logger;
@@ -10,7 +10,7 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Receive Orders, return acknowledgement and upload an image with right dicom tags to Orthanc
@@ -40,7 +40,7 @@ public class OrderMessageHandler implements ReceivingApplication {
             ORM_O01 ormMessage = (ORM_O01) message;
             modifiedDicomFile = dicomFile.modifyDicomAsPerOrder(ormMessage);
             orthancClient.post(modifiedDicomFile);
-            return message.generateACK();
+            return HL7Utils.generateACK(ormMessage.getMSH().getMessageControlID().getValue(), "BahmniEMR");
 
 //            String encodedMessage = new PipeParser().encode(message);
 //            log.debug("Received message:\n" + encodedMessage + "\n\n");

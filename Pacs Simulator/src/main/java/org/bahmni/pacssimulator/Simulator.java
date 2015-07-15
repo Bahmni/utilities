@@ -24,6 +24,7 @@ public class Simulator {
     }
 
     public static void main(String[] args) throws Exception {
+        System.out.println("starting");
         int port = 9000;
         int timeout = 300000;
         String orthancPostInstanceUrl = "http://192.168.33.10:8042/instances";
