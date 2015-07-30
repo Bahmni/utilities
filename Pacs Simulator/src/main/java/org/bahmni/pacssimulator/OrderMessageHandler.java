@@ -13,11 +13,12 @@ import java.net.URISyntaxException;
 import java.util.*;
 
 /**
- * Receive Orders, return acknowledgement and upload an image with right dicom tags to Orthanc
- * It will not upload DICOM images to Orthanc for modify/cancel orders.
+ * Receive Orders, return acknowledgement and upload an image with right dicom tags to Orthanc/DCM4CHEE
+ * It will not upload DICOM images to Orthanc/DCM4CHEE for modify/cancel orders.
  * TODO : For Cancel order should it delete the DICOM image from Orthanc
  */
 public class OrderMessageHandler implements ReceivingApplication {
+    private static final String CANCELLED = "CA";
     private static final Logger log = Logger.getLogger(OrderMessageHandler.class);
 
     private DicomClient dicomClient;
@@ -38,6 +39,9 @@ public class OrderMessageHandler implements ReceivingApplication {
 
         try {
             ORM_O01 ormMessage = (ORM_O01) message;
+            if(ormMessage.getORDER().getORC().getOrderControl().getValue().equals(CANCELLED)){
+                return HL7Utils.generateACK(ormMessage.getMSH().getMessageControlID().getValue(), "BahmniEMR");
+            }
             modifiedDicomFile = dicomFile.modifyDicomAsPerOrder(ormMessage);
             dicomClient.post(modifiedDicomFile);
             return HL7Utils.generateACK(ormMessage.getMSH().getMessageControlID().getValue(), "BahmniEMR");
