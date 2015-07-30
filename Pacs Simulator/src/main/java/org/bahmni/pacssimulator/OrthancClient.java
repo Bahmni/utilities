@@ -14,23 +14,22 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
-public class OrthancClient {
+public class OrthancClient extends DicomClient{
     private static final Logger log = Logger.getLogger(OrthancClient.class);
 
-    private String orthancPostInstanceUrl;
-
     public OrthancClient(String orthancPostInstanceUrl) {
-        this.orthancPostInstanceUrl = orthancPostInstanceUrl;
+        super(orthancPostInstanceUrl);
     }
 
+    @Override
     public void post(File dicomFile) throws IOException, URISyntaxException {
-        if (orthancPostInstanceUrl == null || orthancPostInstanceUrl.trim().length() == 0)
+        if (dicomPostURL == null || dicomPostURL.trim().length() == 0)
             return;
 
         CloseableHttpClient httpclient = HttpClients.createDefault();
 
         try {
-            HttpPost httppost = new HttpPost(orthancPostInstanceUrl);
+            HttpPost httppost = new HttpPost(dicomPostURL);
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setMode(HttpMultipartMode.BROWSER_COMPATIBLE);
 

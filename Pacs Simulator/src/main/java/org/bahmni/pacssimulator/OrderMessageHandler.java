@@ -20,10 +20,10 @@ import java.util.*;
 public class OrderMessageHandler implements ReceivingApplication {
     private static final Logger log = Logger.getLogger(OrderMessageHandler.class);
 
-    private OrthancClient orthancClient;
+    private DicomClient dicomClient;
 
-    public OrderMessageHandler(OrthancClient orthancClient) {
-        this.orthancClient = orthancClient;
+    public OrderMessageHandler(DicomClient dicomClient) {
+        this.dicomClient = dicomClient;
     }
 
     @Override
@@ -39,16 +39,19 @@ public class OrderMessageHandler implements ReceivingApplication {
         try {
             ORM_O01 ormMessage = (ORM_O01) message;
             modifiedDicomFile = dicomFile.modifyDicomAsPerOrder(ormMessage);
-            orthancClient.post(modifiedDicomFile);
+            dicomClient.post(modifiedDicomFile);
             return HL7Utils.generateACK(ormMessage.getMSH().getMessageControlID().getValue(), "BahmniEMR");
 
 //            String encodedMessage = new PipeParser().encode(message);
 //            log.debug("Received message:\n" + encodedMessage + "\n\n");
         } catch (IOException e) {
-            log.error("Could not post image to Orthanc", e);
+            log.error("Could not post image to " + dicomClient.dicomPostURL, e);
             throw new ReceivingApplicationException(e);
         } catch (URISyntaxException e) {
-            log.error("Could not post image to Orthanc", e);
+            log.error("Could not post image to " + dicomClient.dicomPostURL, e);
+            throw new ReceivingApplicationException(e);
+        } catch (InterruptedException e) {
+            log.error("Could not post image to " + dicomClient.dicomPostURL, e);
             throw new ReceivingApplicationException(e);
         } finally {
             if (modifiedDicomFile != null)
