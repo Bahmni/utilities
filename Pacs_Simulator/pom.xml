@@ -68,6 +68,13 @@
             <version>${dcm4che2Version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.9</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

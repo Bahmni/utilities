@@ -19,7 +19,9 @@ public class Dcm4cheeClient extends DicomClient{
             return;
         Runtime run = Runtime.getRuntime();
         Process process = null;
-        String commandToRun = "dcmsnd " + dicomPostURL + " " + dicomFile.getAbsolutePath();
+        String commandToRun = "/Users/swathiv/Documents/Bahmni/PACS/dcm4che-2.0.28/bin/dcmsnd " + dicomPostURL + " " + dicomFile.getAbsolutePath();
+        log.debug(commandToRun);
+        System.out.println(commandToRun);
         try {
             process = run.exec(commandToRun);
             process.getErrorStream();
