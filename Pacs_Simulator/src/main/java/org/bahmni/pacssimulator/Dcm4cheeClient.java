@@ -24,15 +24,18 @@ public class Dcm4cheeClient extends DicomClient{
         System.out.println(commandToRun);
         try {
             process = run.exec(commandToRun);
-            process.getErrorStream();
+            System.out.println(process.getInputStream());
+            System.out.println(process.getErrorStream());
             process.waitFor();
-
+            if(process.exitValue()!=0){
+                throw new IOException("Post to dcm4chee Failed");
+            }
         }
         catch (IOException e) {
-            e.printStackTrace();
             System.out.println("ERROR.RUNNING.CMD");
-
-        }finally{
+            throw new RuntimeException(commandToRun+e.toString());
+        }
+        finally{
             process.destroy();
         }
     }
