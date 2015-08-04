@@ -42,6 +42,7 @@ public class OrderMessageHandler implements ReceivingApplication {
             if(ormMessage.getORDER().getORC().getOrderControl().getValue().equals(CANCELLED)){
                 return HL7Utils.generateACK(ormMessage.getMSH().getMessageControlID().getValue(), "BahmniEMR");
             }
+            System.out.println("Recieved Order on modality for patient : "+ormMessage.getPATIENT().getPID().getPatientID());
             modifiedDicomFile = dicomFile.modifyDicomAsPerOrder(ormMessage);
             dicomClient.post(modifiedDicomFile);
             return HL7Utils.generateACK(ormMessage.getMSH().getMessageControlID().getValue(), "BahmniEMR");

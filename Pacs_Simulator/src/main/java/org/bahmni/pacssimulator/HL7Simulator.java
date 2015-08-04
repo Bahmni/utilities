@@ -10,14 +10,14 @@ import org.apache.log4j.Logger;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 
-public class Simulator {
-    private static final org.apache.log4j.Logger log = Logger.getLogger(Simulator.class);
+public class HL7Simulator {
+    private static final org.apache.log4j.Logger log = Logger.getLogger(HL7Simulator.class);
 
     private final int port;
     private final int timeout;
     private final DicomClient dicomClient;
 
-    public Simulator(int port, int timeout, DicomClient client) {
+    public HL7Simulator(int port, int timeout, DicomClient client) {
         this.port = port;
         this.timeout = timeout;
         this.dicomClient = client;
@@ -56,7 +56,7 @@ public class Simulator {
             }
         }
 
-        Simulator simulator = new Simulator(port, timeout, client);
+        HL7Simulator simulator = new HL7Simulator(port, timeout, client);
         System.out.println("starting with "+client.dicomPostURL);
         simulator.startServer();
     }

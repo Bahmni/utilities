@@ -33,7 +33,8 @@ public class DicomFile {
         DicomInputStream dicomInputStream = new DicomInputStream(ClassLoader.getSystemResourceAsStream(fileName));
         DicomObject dicomObject = dicomInputStream.readDicomObject();
 
-        String patientId = ormMessage.getPATIENT().getPID().getPatientID().getIDNumber().getValue();
+//        String patientId = ormMessage.getPATIENT().getPID().getPatientID().getIDNumber().getValue();
+        String patientId = ormMessage.getPATIENT().getPID().getPatientIdentifierList(0).getIDNumber().getValue();
         String givenName = ormMessage.getPATIENT().getPID().getPatientName(0).getGivenName().getValue();
         String familyName = ormMessage.getPATIENT().getPID().getPatientName(0).getFamilyName().getSurname().getValue();
         String orderId = ormMessage.getORDER().getORC().getPlacerOrderNumber().getEntityIdentifier().getValue();
@@ -49,7 +50,7 @@ public class DicomFile {
     }
 
     public File writeFile(DicomObject dicomObject) {
-        String randomFileName = UUID.randomUUID().toString();
+        String randomFileName = UUID.randomUUID().toString()+".dcm";
         File outputDicomFile = new File(randomFileName);
         FileOutputStream fileOutputStream;
         try {

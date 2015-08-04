@@ -84,7 +84,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>org.bahmni.pacssimulator.Simulator</mainClass>
+                            <mainClass>org.bahmni.pacssimulator.HL7Simulator</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>
