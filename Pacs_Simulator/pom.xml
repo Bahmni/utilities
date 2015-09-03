@@ -75,6 +75,13 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>pixelmed</groupId>
+            <artifactId>pixelmed</artifactId>
+            <version>20150809</version>
+            <type>jar</type>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -173,6 +180,10 @@
             <!--<releases>-->
             <!--<updatePolicy>interval:10080</updatePolicy>-->
             <!--</releases>-->
+        </repository>
+        <repository>
+            <id>my-local-repo</id>
+            <url>file://${basedir}/myrepo</url>
         </repository>
     </repositories>
 

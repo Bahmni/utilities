@@ -79,8 +79,9 @@ public class HL7Simulator {
                     }
                 });
 
+        System.out.println("Starting server at " + Inet4Address.getLocalHost().getHostAddress() + ":" + port + " with timeout of " + timeout);
         server.startAndWait();
         System.setProperty("ca.uhn.hl7v2.app.initiator.timeout", Integer.toString(timeout));
-        log.debug("Starting server at " + Inet4Address.getLocalHost().getHostAddress() + ":" + port + " with timeout of " + timeout);
+
     }
 }

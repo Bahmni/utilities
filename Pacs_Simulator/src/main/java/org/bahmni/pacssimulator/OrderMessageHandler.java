@@ -5,6 +5,7 @@ import ca.uhn.hl7v2.model.*;
 import ca.uhn.hl7v2.model.v25.message.*;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
+import com.pixelmed.dicom.DicomException;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -42,13 +43,12 @@ public class OrderMessageHandler implements ReceivingApplication {
             if(ormMessage.getORDER().getORC().getOrderControl().getValue().equals(CANCELLED)){
                 return HL7Utils.generateACK(ormMessage.getMSH().getMessageControlID().getValue(), "BahmniEMR");
             }
-            System.out.println("Recieved Order on modality for patient : "+ormMessage.getPATIENT().getPID().getPatientID());
+            System.out.println("Recieved Order on modality for patient : "+ormMessage.getPATIENT().getPID().getPatientIdentifierList(0).getIDNumber().getValue());
             modifiedDicomFile = dicomFile.modifyDicomAsPerOrder(ormMessage);
             dicomClient.post(modifiedDicomFile);
-            return HL7Utils.generateACK(ormMessage.getMSH().getMessageControlID().getValue(), "BahmniEMR");
-
 //            String encodedMessage = new PipeParser().encode(message);
 //            log.debug("Received message:\n" + encodedMessage + "\n\n");
+            return HL7Utils.generateACK(ormMessage.getMSH().getMessageControlID().getValue(), "BahmniEMR");
         } catch (IOException e) {
             log.error("Could not post image to " + dicomClient.dicomPostURL, e);
             throw new ReceivingApplicationException(e);
@@ -56,6 +56,9 @@ public class OrderMessageHandler implements ReceivingApplication {
             log.error("Could not post image to " + dicomClient.dicomPostURL, e);
             throw new ReceivingApplicationException(e);
         } catch (InterruptedException e) {
+            log.error("Could not post image to " + dicomClient.dicomPostURL, e);
+            throw new ReceivingApplicationException(e);
+        } catch (DicomException e){
             log.error("Could not post image to " + dicomClient.dicomPostURL, e);
             throw new ReceivingApplicationException(e);
         } finally {

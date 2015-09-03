@@ -1,6 +1,8 @@
 package org.bahmni.pacssimulator;
 
 import ca.uhn.hl7v2.model.v25.message.ORM_O01;
+import com.pixelmed.dicom.DicomException;
+import com.pixelmed.dicom.UIDGenerator;
 import org.apache.log4j.Logger;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
@@ -28,7 +30,9 @@ public class DicomFile {
         this.fileName = fileName;
     }
 
-    public File modifyDicomAsPerOrder(ORM_O01 ormMessage) throws URISyntaxException, IOException {
+    public File modifyDicomAsPerOrder(ORM_O01 ormMessage) throws URISyntaxException, IOException, DicomException {
+        UIDGenerator uidGenerator = new UIDGenerator();
+
         InputStream resourceAsStream = this.getClass().getResourceAsStream(fileName);
         DicomInputStream dicomInputStream = new DicomInputStream(ClassLoader.getSystemResourceAsStream(fileName));
         DicomObject dicomObject = dicomInputStream.readDicomObject();
@@ -38,11 +42,22 @@ public class DicomFile {
         String givenName = ormMessage.getPATIENT().getPID().getPatientName(0).getGivenName().getValue();
         String familyName = ormMessage.getPATIENT().getPID().getPatientName(0).getFamilyName().getSurname().getValue();
         String orderId = ormMessage.getORDER().getORC().getPlacerOrderNumber().getEntityIdentifier().getValue();
+        String studyId = UUID.randomUUID().toString();
+        String instanceUid = uidGenerator.getNewSOPInstanceUID(studyId,"1","1").toString();
+        String seriesInstanceUid = uidGenerator.getNewSeriesInstanceUID(studyId, "1").toString();
+        String studyInstanceUid = uidGenerator.getNewStudyInstanceUID(studyId).toString();
 
         dicomObject.putString(Tag.PatientName, VR.PN, givenName + " " + familyName);
         dicomObject.putString(Tag.PatientID, VR.LO, patientId);
         dicomObject.putString(Tag.AccessionNumber, VR.LO, orderId);
-        dicomObject.putString(Tag.StudyID, VR.LO, UUID.randomUUID().toString());
+        dicomObject.putString(Tag.StudyID, VR.LO, studyId);
+        dicomObject.putString(Tag.MediaStorageSOPInstanceUID, VR.UI, instanceUid);
+        dicomObject.putString(Tag.SOPInstanceUID, VR.UI, instanceUid);
+        dicomObject.putString(Tag.SeriesInstanceUID, VR.UI, seriesInstanceUid);
+        dicomObject.putString(Tag.StudyInstanceUID, VR.UI, studyInstanceUid);
+
+//        System.out.println("The Dicom file for patient"+patientId+givenName+familyName+orderId);
+//        System.out.println(dicomObject.toString());
 
         dicomObject.putString(Tag.StudyDate, VR.DT, new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
 
