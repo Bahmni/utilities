@@ -15,9 +15,9 @@ enabled=1
 gpgcheck=0
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-mysql" > /etc/yum.repos.d/mysql56.repo
 
+    yum install -y wget
     wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-6.noarch.rpm
     sudo rpm -Uvh epel-release-latest-6.noarch.rpm
-    yum install -y wget
     yum -y update
 }
 
