@@ -28,6 +28,8 @@ install_oracle_jre(){
 }
 
 install_mysql(){
+    yum remove -y mysql-libs
+    yum clean all
     yum install -y mysql-community-server
     service mysqld start
     mysqladmin -u root password password
