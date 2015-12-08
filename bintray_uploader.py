@@ -24,5 +24,5 @@ for file_name in file_names:
         path = path or ''
         verrel = version + '-' + release
         print "Uploading %s..." % file_name
-        system(curl_template % (file_name, BINTRAY_API_KEY, name, verrel, name))
+        system(curl_template % (file_name, BINTRAY_API_KEY, name, verrel, file_name))
         print "Completed."
