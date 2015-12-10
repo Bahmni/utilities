@@ -13,7 +13,7 @@ if len(sys.argv) != 2:
 rpm_dir = sys.argv[1]
 file_names = [join(rpm_dir, file) for file in listdir(rpm_dir) if isfile(join(rpm_dir, file))]
 BINTRAY_API_KEY = environ['BINTRAY_API_KEY']
-curl_template = "curl -T %s -ubahmni:%s https://api.bintray.com/content/bahmni/rpm/%s/%s/%s.rpm"
+curl_template = "curl -T %s -ubahmni:%s https://api.bintray.com/content/bahmni/rpm/%s/%s/%s"
 pattern = re.compile(r'(.*/)*(.*)-(.*)-(.*?)\.(.*)(\.rpm)')
 
 for file_name in file_names:
