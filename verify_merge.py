@@ -4,6 +4,9 @@
 import argparse
 import os
 import pygit2
+import sys
+
+from termcolor import colored
 
 
 class BadBahmniVersionException(Exception):
@@ -19,7 +22,7 @@ parser.add_argument("-v2", "--version2",
 parser.add_argument("-r", "--repo", help="The local repository path", type=str)
 args = parser.parse_args()
 
-branch1 = 'origin/release-%s' % args.version1
+branch1 = "origin/%s" % args.version1 if args.version1 == "master" else 'origin/release-%s' % args.version1
 branch2 = "origin/%s" % args.version2 if args.version2 == "master" else 'origin/release-%s' % args.version2
 repo = pygit2.Repository(args.repo)
 
@@ -45,7 +48,7 @@ def get_all_branches():
         version += 0.01
 
     if not ran:
-        print "Invalid/Non-existent version"
+        print colored("Invalid/Non-existent version", 'red')
         exit(2)
 
     branches.append('origin/master')
@@ -66,28 +69,58 @@ def get_probable_unmerged_commits(commits, next_commits):
 def get_commits_of(branch):
     branch = repo.lookup_branch(branch, pygit2.GIT_BRANCH_REMOTE)
     if not branch:
-        raise BadBahmniVersionException("Invalid/Non-existent version")
+        raise BadBahmniVersionException(
+            colored("Invalid/Non-existent version", 'red'))
     ref = repo.lookup_reference(branch.name)
     repo.checkout(ref)
 
     commits = {}
 
     for commit in repo.walk(repo.head.target):
-        commits[commit.id] = commit.author
+        commits[commit.id] = commit
 
     return commits
+
+
+def find_possible_cherry_picks(ids, current_commits, next_commits):
+    probable_cherry_picks = {}
+
+    for id in ids:
+        message = current_commits[id].message
+        patch = current_commits[id].tree.diff_to_tree().patch
+        author_email = current_commits[id].author.email
+
+        for sha in next_commits.keys():
+            commit = next_commits[sha]
+            if commit.message == message and commit.author.email == author_email:
+                probable_cherry_picks[id] = commit
+                break
+
+    return probable_cherry_picks
+
 
 if __name__ == "__main__":
     current_commits = get_commits_of(branch1)
     next_commits = get_commits_of(branch2)
 
-    print "Comparing branches: %s and %s" % (branch1, branch2)
+    print "Comparing branches: %s and %s" % (colored(branch1, 'yellow'), colored(branch2, 'yellow'))
 
-    the_list = get_probable_unmerged_commits(
+    ids = get_probable_unmerged_commits(
         current_commits.keys(), next_commits.keys())
-    if len(the_list):
-        print "List of probable unmerged/cherry picked commit IDs in branch %s:" % branch1
-        for id in the_list:
-            print "id: %s by: %s <%s>" % (id, current_commits[id].name, current_commits[id].email)
+    if len(ids):
+        print "List of probable unmerged/cherry picked commit IDs in branch %s:" % colored(branch1, 'yellow')
+        cherry_picks = find_possible_cherry_picks(
+            ids, current_commits, next_commits)
+
+        for id in ids:
+            sys.stdout.write("commit %s by %s <%s>" % (id, current_commits[
+                             id].author.name, current_commits[id].author.email))
+            try:
+                other = cherry_picks[id]
+                print colored(". Possibily a cherry pick of %s on %s" % (other.id, branch2), 'yellow')
+            except KeyError:
+                print colored(". Oho! This looks like an unmerged commit.", 'red')
     else:
-        print "All Cool"
+        print colored("All Cool!", 'green')
+
+    print colored("All views and opinions expressed by me is purely speculative and I could be woefully wrong. Hey, I'm a machine after all. To Err is machine, to forgive is Divine!", 'yellow')
