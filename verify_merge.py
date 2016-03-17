@@ -117,7 +117,7 @@ if __name__ == "__main__":
                              id].author.name, current_commits[id].author.email))
             try:
                 other = cherry_picks[id]
-                print colored(". Possibily a cherry pick of %s on %s" % (other.id, branch2), 'yellow')
+                print colored(". Possibly a cherry pick of %s on %s" % (other.id, branch2), 'yellow')
             except KeyError:
                 print colored(". Oho! This looks like an unmerged commit.", 'red')
     else:
