@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="utf-8"?>
+<cruise xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="cruise-config.xsd" schemaVersion="74">
+  <server artifactsdir="artifacts"/>
+<pipelines group="BuildGroup">
+    <pipeline name="Build">
+      <params>
+        <param name="implementationName">possible</param>
+        <param name="bahmni_version">5.3-SNAPSHOT</param>
+      </params>
+      <materials>
+        <git url="https://github.com/Bahmni/bahmni-core.git" dest="bahmnicore" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/OpenELIS.git" dest="OpenElis" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/#{implementationName}-config.git" dest="#{implementationName}-config" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/openmrs-module-bahmniapps.git" dest="openmrs-module-bahmniapps" autoUpdate="false" materialName="openmrs-module-bahmniapps" />
+        <git url="https://github.com/Bahmni/openmrs-distro-bahmni.git" dest="openmrs-distro-bahmni" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/bahmni-java-utils.git" dest="bahmni-java-utils" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/dhis.git" dest="dhis" />
+        <git url="https://github.com/Bahmni/client_side_logging" dest="client_side_logging_source" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/bahmni-environment" dest="bahmni-environment" autoUpdate="false" materialName="bahmni-environment" />
+        <git url="https://github.com/Bahmni/openerp-atomfeed-service.git" dest="openerp-atomfeed-service" />
+        <git url="https://github.com/Bahmni/openerp-modules.git" dest="openerp-modules" />
+      </materials>
+      <stage name="defaultStage">
+        <jobs>
+          <job name="BahmniCore">
+            <tasks>
+              <exec command="<%= @maven_home %>/bin/mvn" workingdir="bahmni-java-utils">
+                <arg>clean</arg>
+                <arg>install</arg>
+                <arg>-DskipTests</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="<%= @maven_home %>/bin/mvn" workingdir="bahmnicore">
+                <arg>install</arg>
+                <arg>-DskipTests</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="<%= @maven_home %>/bin/mvn" workingdir="openmrs-distro-bahmni">
+                <arg>clean</arg>
+                <arg>install</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>MVN</resource>
+            </resources>
+            <artifacts>
+              <artifact src="bahmnicore/bahmnicore-omod/target/*.omod" dest="bahmnicoreartifacts" />
+              <artifact src="openmrs-distro-bahmni/distro/target/distro-*.zip" dest="deployables" />
+            </artifacts>
+          </job>
+          <job name="OpenElis">
+            <tasks>
+              <exec command="mkdir">
+                <arg>-p</arg>
+                <arg>deployables</arg>
+                <runif status="passed" />
+              </exec>
+              <ant target="dist" workingdir="OpenElis">
+                <runif status="passed" />
+              </ant>
+              <exec command="cp">
+                <arg>OpenElis/openelis/dist/openelis.war</arg>
+                <arg>deployables</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="cp">
+                <arg>OpenElis/OpenElis.zip</arg>
+                <arg>deployables</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="curl">
+                <arg>-o</arg>
+                <arg>go_revisions.sh</arg>
+                <arg>https://raw.githubusercontent.com/Bahmni/bahmni-environment/master/scripts/ci/go_revisions.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="chmod">
+                <arg>a+x</arg>
+                <arg>go_revisions.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash">
+                <arg>-c</arg>
+                <arg>./go_revisions.sh &gt; deployables/bahmni_openelis_revision.txt</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <artifacts>
+              <artifact src="deployables" />
+            </artifacts>
+          </job>
+          <job name="ImplementationConfig">
+            <environmentvariables>
+              <variable name="implementationName">
+                <value>possible</value>
+              </variable>
+            </environmentvariables>
+            <tasks>
+              <exec command="/bin/bash" workingdir="#{implementationName}-config">
+                <arg>--login</arg>
+                <arg>scripts/package.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <artifacts>
+              <artifact src="#{implementationName}-config/target/#{implementationName}_config.zip" dest="deployables" />
+            </artifacts>
+          </job>
+          <job name="BahmniApps">
+            <tasks>
+              <exec command="bower" workingdir="openmrs-module-bahmniapps/ui">
+                <arg>cache</arg>
+                <arg>clean</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash" workingdir="openmrs-module-bahmniapps/ui">
+                <arg>--login</arg>
+                <arg>scripts/package.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="<%= @maven_home %>/bin/mvn" workingdir="openmrs-module-bahmniapps">
+                <arg>clean</arg>
+                <arg>package</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>UI</resource>
+            </resources>
+            <artifacts>
+              <artifact src="openmrs-module-bahmniapps/ui/target/bahmniapps.zip" dest="deployables" />
+              <artifact src="openmrs-module-bahmniapps/omod/target/bahmniapps-#{bahmni_version}.omod" dest="deployables/ui-modules" />
+            </artifacts>
+          </job>
+          <job name="DHIS">
+            <tasks>
+              <exec command="bash" workingdir="dhis">
+                <arg>gradlew</arg>
+                <arg>clean</arg>
+                <arg>install</arg>
+                <arg>--refresh-dependencies</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>MVN</resource>
+            </resources>
+          </job>
+          <job name="ClientSideLogging">
+            <artifacts>
+              <artifact src="client_side_logging_source/client_side_logging.py" dest="client_side_logging" />
+              <artifact src="client_side_logging_source/client_side_logging.wsgi" dest="client_side_logging" />
+              <artifact src="client_side_logging_source/__init__.py" dest="client_side_logging" />
+              <artifact src="client_side_logging_source/logging.yml" dest="client_side_logging" />
+              <artifact src="client_side_logging_source/RotatingLogger.py" dest="client_side_logging" />
+            </artifacts>
+          </job>
+          <job name="BahmniEnvironment">
+            <tasks>
+              <exec command="sh" workingdir="bahmni-environment">
+                <arg>scripts/validate-manifests.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="zip">
+                <arg>-r</arg>
+                <arg>bahmni-environment.zip</arg>
+                <arg>bahmni-environment</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <artifacts>
+              <artifact src="bahmni-environment.zip" />
+            </artifacts>
+          </job>
+          <job name="openerp-atomfeed-service">
+            <tasks>
+              <exec command="<%= @maven_home %>/bin/mvn" workingdir="openerp-atomfeed-service">
+                <arg>clean</arg>
+                <arg>install</arg>
+                <arg>-DskipTests</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <artifacts>
+              <artifact src="openerp-atomfeed-service/openerp-atomfeed-service/target/*.war" />
+            </artifacts>
+          </job>
+          <job name="openerp">
+            <tasks>
+              <exec command="echo" workingdir="openerp-modules">
+                <arg>"-c sudo cp -R ./* $OPENERP_LOCATION/openerp/addons/"</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="mkdir">
+                <arg>-p</arg>
+                <arg>deployables</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="zip">
+                <arg>-r</arg>
+                <arg>deployables/openerp-modules.zip</arg>
+                <arg>openerp-modules</arg>
+                <arg>--exclude=*.git*</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="curl">
+                <arg>-o</arg>
+                <arg>go_revisions.sh</arg>
+                <arg>https://raw.githubusercontent.com/Bahmni/bahmni-environment/master/scripts/ci/go_revisions.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="chmod">
+                <arg>a+x</arg>
+                <arg>go_revisions.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash">
+                <arg>-c</arg>
+                <arg>./go_revisions.sh &gt; deployables/bahmni_openerp_revision.txt</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <artifacts>
+              <artifact src="deployables" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="package">
+        <jobs>
+          <job name="Fetch">
+            <environmentvariables>
+              <variable name="implementationName">
+                <value>possible</value>
+              </variable>
+            </environmentvariables>
+            <tasks>
+              <fetchartifact pipeline="Build" stage="defaultStage" job="BahmniCore" srcdir="deployables">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build" stage="defaultStage" job="BahmniApps" srcdir="deployables">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build" stage="defaultStage" job="ImplementationConfig" srcdir="deployables">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build" stage="defaultStage" job="ClientSideLogging" srcdir="client_side_logging" dest="deployables">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build" stage="defaultStage" job="OpenElis" srcdir="deployables" dest="elis">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build" stage="defaultStage" job="ImplementationConfig" srcfile="deployables/#{implementationName}_config.zip" dest="deployables-implementation">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build" stage="defaultStage" job="openerp-atomfeed-service" srcfile="openerp-atomfeed-service.war" dest="erp/deployables">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build" stage="defaultStage" job="openerp" srcdir="deployables" dest="erp">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build" stage="defaultStage" job="BahmniEnvironment" srcfile="bahmni-environment.zip">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="cp">
+                <arg>bahmni-environment/scripts/ci/bahmni_deploy.sh</arg>
+                <arg>deployables</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/sh">
+                <arg>bahmni-environment/scripts/ci/create_all_modules.sh</arg>
+                <arg>#{implementationName}</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <artifacts>
+              <artifact src="bahmni_installer.sh" />
+              <artifact src="#{implementationName}_config_installer.sh" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="Deploy" isLocked="false">
+      <params>
+        <param name="implementationName">possible</param>
+      </params>
+      <materials>
+        <pipeline pipelineName="Build" stageName="package" />
+      </materials>
+      <stage name="deploy">
+        <approval type="manual" />
+        <jobs>
+          <job name="defaultJob">
+            <tasks>
+              <fetchartifact pipeline="Build" stage="package" job="Fetch" srcfile="bahmni_installer.sh">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build" stage="package" job="Fetch" srcdir="#{implementationName}_config_installer.sh">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="wget">
+                <arg>https://raw.githubusercontent.com/Bahmni/bahmni-environment/master/scripts/ci/all_deploy_tasks.sh</arg>
+                <arg>--no-check-certificate</arg>
+                <arg>-O</arg>
+                <arg>all_deploy_tasks.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="sudo">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>all_deploy_tasks.sh</arg>
+                <arg>#{implementationName}</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+  </pipelines>
+</cruise>
+

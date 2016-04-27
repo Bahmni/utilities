@@ -1,0 +1,232 @@
+<pipeline name="Provision_Production">
+    <params>
+        <param name="branch">release-5.5</param>
+    </params>
+    <materials>
+        <git url="https://github.com/Bahmni/bahmni-environment.git" branch="#{branch}" dest="bahmni-environment" autoUpdate="false" />
+    </materials>
+    <stage name="ProvisionStaging" cleanWorkingDir="true">
+        <approval type="manual" />
+        <jobs>
+            <job name="defaultJob">
+                <tasks>
+                    <exec command="sudo" workingdir="bahmni-environment">
+                        <arg>-E</arg>
+                        <arg>sh</arg>
+                        <arg>scripts/provision.sh</arg>
+                        <runif status="passed" />
+                    </exec>
+                    <exec command="sudo">
+                        <arg>cp</arg>
+                        <arg>-R</arg>
+                        <arg>/bahmni_temp/logs</arg>
+                        <arg>.</arg>
+                        <runif status="passed" />
+                    </exec>
+                    <exec command="sudo">
+                        <arg>chown</arg>
+                        <arg>-R</arg>
+                        <arg>go:go</arg>
+                        <arg>logs</arg>
+                        <runif status="passed" />
+                    </exec>
+                </tasks>
+                <resources>
+                    <resource>Staging</resource>
+                </resources>
+                <artifacts>
+                    <artifact src="logs" />
+                </artifacts>
+            </job>
+        </jobs>
+    </stage>
+    <stage name="provisionActiveDB" cleanWorkingDir="true">
+        <approval type="manual" />
+        <environmentvariables>
+            <variable name="FACTER_bahmni_server_type">
+                <value>db-server</value>
+            </variable>
+            <variable name="FACTER_app_server_ip">
+                <value>172.16.24.21</value>
+            </variable>
+            <variable name="FACTER_passive_app_server_ip">
+                <value>172.16.24.22</value>
+            </variable>
+        </environmentvariables>
+        <jobs>
+            <job name="defaultJob">
+                <tasks>
+                    <exec command="sudo" workingdir="bahmni-environment">
+                        <arg>-E</arg>
+                        <arg>sh</arg>
+                        <arg>scripts/provision.sh</arg>
+                        <runif status="passed" />
+                    </exec>
+                    <exec command="sudo">
+                        <arg>cp</arg>
+                        <arg>-R</arg>
+                        <arg>/bahmni_temp/logs</arg>
+                        <arg>.</arg>
+                        <runif status="passed" />
+                    </exec>
+                    <exec command="sudo">
+                        <arg>chown</arg>
+                        <arg>-R</arg>
+                        <arg>go:go</arg>
+                        <arg>logs</arg>
+                        <runif status="passed" />
+                    </exec>
+                </tasks>
+                <resources>
+                    <resource>ActiveDB</resource>
+                </resources>
+                <artifacts>
+                    <artifact src="logs" />
+                </artifacts>
+            </job>
+        </jobs>
+    </stage>
+    <stage name="provisionPassiveDB" cleanWorkingDir="true">
+        <environmentvariables>
+            <variable name="FACTER_deploy_passive">
+                <value>true</value>
+            </variable>
+            <variable name="FACTER_bahmni_server_type">
+                <value>db-server</value>
+            </variable>
+            <variable name="FACTER_app_server_ip">
+                <value>172.16.24.21</value>
+            </variable>
+            <variable name="FACTER_passive_app_server_ip">
+                <value>172.16.24.22</value>
+            </variable>
+        </environmentvariables>
+        <jobs>
+            <job name="defaultJob">
+                <tasks>
+                    <exec command="sh" workingdir="bahmni-environment">
+                        <arg>scripts/provision.sh</arg>
+                        <runif status="passed" />
+                    </exec>
+                    <exec command="sudo">
+                        <arg>cp</arg>
+                        <arg>-R</arg>
+                        <arg>/bahmni_temp/logs</arg>
+                        <arg>.</arg>
+                        <runif status="passed" />
+                    </exec>
+                    <exec command="sudo">
+                        <arg>chown</arg>
+                        <arg>-R</arg>
+                        <arg>go:go</arg>
+                        <arg>logs</arg>
+                        <runif status="passed" />
+                    </exec>
+                </tasks>
+                <resources>
+                    <resource>PassiveDB</resource>
+                </resources>
+                <artifacts>
+                    <artifact src="logs" />
+                </artifacts>
+            </job>
+        </jobs>
+    </stage>
+    <stage name="provisionActiveApp" cleanWorkingDir="true">
+        <environmentvariables>
+            <variable name="FACTER_bahmni_server_type">
+                <value>app-server</value>
+            </variable>
+            <variable name="FACTER_app_server_ip">
+                <value>172.16.24.21</value>
+            </variable>
+            <variable name="FACTER_passive_app_server_ip">
+                <value>172.16.24.22</value>
+            </variable>
+            <variable name="FACTER_db_server_ip">
+                <value>172.16.24.23</value>
+            </variable>
+        </environmentvariables>
+        <jobs>
+            <job name="defaultJob">
+                <tasks>
+                    <exec command="sudo" workingdir="bahmni-environment">
+                        <arg>-E</arg>
+                        <arg>sh</arg>
+                        <arg>scripts/provision.sh</arg>
+                        <runif status="passed" />
+                    </exec>
+                    <exec command="sudo">
+                        <arg>cp</arg>
+                        <arg>-R</arg>
+                        <arg>/bahmni_temp/logs</arg>
+                        <arg>.</arg>
+                        <runif status="passed" />
+                    </exec>
+                    <exec command="sudo">
+                        <arg>chown</arg>
+                        <arg>-R</arg>
+                        <arg>go:go</arg>
+                        <arg>logs</arg>
+                        <runif status="passed" />
+                    </exec>
+                </tasks>
+                <resources>
+                    <resource>ActiveApp</resource>
+                </resources>
+                <artifacts>
+                    <artifact src="logs" />
+                </artifacts>
+            </job>
+        </jobs>
+    </stage>
+    <stage name="provisionPassiveApp" cleanWorkingDir="true">
+        <environmentvariables>
+            <variable name="FACTER_deploy_passive">
+                <value>true</value>
+            </variable>
+            <variable name="FACTER_bahmni_server_type">
+                <value>app-server</value>
+            </variable>
+            <variable name="FACTER_app_server_ip">
+                <value>172.16.24.21</value>
+            </variable>
+            <variable name="FACTER_passive_app_server_ip">
+                <value>172.16.24.22</value>
+            </variable>
+            <variable name="FACTER_db_server_ip">
+                <value>172.16.24.23</value>
+            </variable>
+        </environmentvariables>
+        <jobs>
+            <job name="defaultJob">
+                <tasks>
+                    <exec command="sh" workingdir="bahmni-environment">
+                        <arg>scripts/provision.sh</arg>
+                        <runif status="passed" />
+                    </exec>
+                    <exec command="sudo">
+                        <arg>cp</arg>
+                        <arg>-R</arg>
+                        <arg>/bahmni_temp/logs</arg>
+                        <arg>.</arg>
+                        <runif status="passed" />
+                    </exec>
+                    <exec command="sudo">
+                        <arg>chown</arg>
+                        <arg>-R</arg>
+                        <arg>go:go</arg>
+                        <arg>logs</arg>
+                        <runif status="passed" />
+                    </exec>
+                </tasks>
+                <resources>
+                    <resource>PassiveApp</resource>
+                </resources>
+                <artifacts>
+                    <artifact src="logs" />
+                </artifacts>
+            </job>
+        </jobs>
+    </stage>
+</pipeline>

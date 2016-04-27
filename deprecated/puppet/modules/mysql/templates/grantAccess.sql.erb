@@ -1,0 +1,3 @@
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'<%= @app_server %>' identified by 'password' WITH GRANT OPTION;
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'<%= @passive_app_server %>' identified by 'password' WITH GRANT OPTION;
+FLUSH PRIVILEGES;

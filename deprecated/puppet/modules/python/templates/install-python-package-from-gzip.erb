@@ -1,0 +1,18 @@
+# delete the old tar file
+rm -f $2
+# copy the tar.gz file from package to temp
+cp $1/$2.gz .
+
+# unzip and untar the tar.gz file
+gunzip -q $2.gz
+tar -xvf $2
+
+# go to the extracted packages's top folder, * is used because the version number is unknown
+cd $3*
+python setup.py -q install
+cd ..
+
+# delete the tar file
+rm -f $2
+# delete the extracted folder
+rm -rf $3*

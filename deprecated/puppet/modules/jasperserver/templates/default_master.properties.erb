@@ -1,0 +1,100 @@
+################################################################################
+#                                                                              #
+# Master Properties File                                                       #
+#                                                                              #
+# Standard usage is to rename this file to default_master.properties.          #
+# It should be placed in the root of the buildomatic directory, like:          #
+#                                                                              #
+#     <js-install>/buildomatic/default_master.properties                       #
+#                                                                              #
+# There is one sample property file for each database type. Sample property    #
+# files are found in:                                                          #
+#                                                                              #
+#     <js-install>/buildomatic/sample_conf                                     #
+#                                                                              #
+################################################################################
+
+################################################################################
+#                                                                              #
+# Installation Settings                                                        #
+#                                                                              #
+# Set values for:                                                              #
+#                                                                              #
+#   1) Application server type                                                 #
+#                                                                              #
+#   2) Path to application server home directory                               #
+#                                                                              #
+#   3) Database location and connection settings                               #
+#                                                                              #
+################################################################################
+
+appServerType = tomcat7
+# appServerType = tomcat5
+# appServerType = tomcat6
+# appServerType = jboss
+# appServerType = jboss7
+# appServerType = glassfish2
+# appServerType = glassfish3
+# (beta) appServerType = weblogic
+# (beta) appServerType = websphere
+# appServerType = skipAppServerCheck
+
+# Tomcat app server root dir
+appServerDir = <%=@jasperTomcatHome%>
+# appServerDir = /home/devuser/apache-tomcat-7.0.26
+# if linux package managed tomcat instance, set two properties below
+# CATALINA_HOME = /usr/share/tomcat6
+# CATALINA_BASE = /var/lib/tomcat6
+
+# JBoss app server root dir
+# appServerDir = C:\\jboss-5.1.0
+# appServerDir = /home/devuser/jboss-5.1.0
+# appServerDir = /usr/bin/jboss
+# jboss.profile = default
+
+# Glassfish app server root dir
+# appServerDir = C:\\glassfish-3.1.2
+# appServerDir = /home/devuser/glassfish-3.1.2
+# appServerDir = /usr/bin/glassfish
+
+# database type
+dbType=<%=@jasperDbType%>
+
+# database location and connection settings
+
+dbHost=<%=@jasperDbHost%>
+dbUsername=<%=@jasperDbUsername%>
+dbPassword=<%=@jasperDbPassword%>
+
+
+
+# additional database parameters
+# (uncomment these if you want non-default settings)
+
+# dbPort=3306
+
+# JasperServer db name, sample db names
+js.dbName=<%=@jasperDbName%>
+# sugarcrm.dbName=sugarcrm
+# foodmart.dbName=foodmart
+
+# web app name
+# (set one of these to deploy to a non-default war file name)
+# webAppNameCE = jasperserver
+# webAppNamePro = jasperserver-pro
+
+#
+# JDBC driver
+#   A JDBC driver should be placed in the following location in order
+#   to be found by the buildomatic logic at execution time:
+#
+#   <path>/buildomatic/conf_source/db/mysql/jdbc
+#
+
+# JDBC driver version
+# (uncomment to change to a target mysql setting. Also,make sure that your jdbc driver is named as
+# "{mysql-connector-java}-{maven.jdbc.version}.jar". It will required for Jboss7, because it uses this setting during
+# deployment process.)
+#
+maven.jdbc.artifactId=mysql-connector-java
+maven.jdbc.version=<%=@mysql_connector_java_version%>

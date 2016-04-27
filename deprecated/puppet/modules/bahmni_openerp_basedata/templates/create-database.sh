@@ -1,0 +1,1 @@
+su - postgres -c 'createdb -e openerp -E unicode -T template1 -O openerp'

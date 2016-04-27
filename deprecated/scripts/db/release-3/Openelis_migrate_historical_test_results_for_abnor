@@ -1,0 +1,10 @@
+# setup test_result ref data for abnormality
+update result set abnormal = ( case when (cast(value as double precision) <= max_normal and cast(value as double precision) >= min_normal) then false else true end )
+where result_type='N' and value!='';
+
+
+update result  set abnormal = tr.abnormal from result as r
+    Join test_result as tr
+        On tr.id = r.test_result_id
+where r.result_type='D' and r.test_result_id is not null and
+ tr.abnormal is not null and tst_rslt_type = 'D';

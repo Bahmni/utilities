@@ -1,0 +1,1 @@
+sed -i 's/keepcache=0/keepcache=1/g' /etc/yum.conf

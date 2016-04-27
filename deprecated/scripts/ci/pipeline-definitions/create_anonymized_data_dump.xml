@@ -1,0 +1,38 @@
+<!-- Template definition-->
+<pipeline name="Create_Anonymized_Data_Dump">
+    <stage name="defaultStage">
+        <approval type="manual" />
+        <jobs>
+            <job name="defaultJob">
+                <tasks>
+                    <exec command="bash">
+                        <arg>bahmni-environment/scripts/ci/pipeline-definitions/dumpAndAnonymise.sh</arg>
+                        <arg>#{mysql_password}</arg>
+                        <arg>#{implementation_name}</arg>
+                        <arg>#{aws_access_key}</arg>
+                        <arg>#{aws_secret_key}</arg>
+                        <runif status="passed" />
+                    </exec>
+                </tasks>
+                <resources>
+                    <resource>Anon_DB_Agent</resource>
+                </resources>
+            </job>
+        </jobs>
+    </stage>
+</pipeline>
+
+
+        <!-- Pipeline xml aws_access_key,and aws_secret_key need to generate in amazon website and put here.. -->
+<pipeline name="Create_Anonymised_Data_Dump" template="Create_Anonymized_Data_Dump">
+    <params>
+        <param name="branch">master</param>
+        <param name="implementation_name">jss</param>
+        <param name="mysql_password">password</param>
+        <param name="aws_access_key">xxxxxxxxxxxxxxxxxxxxxxxx</param>
+        <param name="aws_secret_key">xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</param>
+    </params>
+    <materials>
+        <git url="https://github.com/Bahmni/bahmni-environment" branch="#{branch}" dest="bahmni-environment" materialName="bahmni-environment" />
+    </materials>
+</pipeline>

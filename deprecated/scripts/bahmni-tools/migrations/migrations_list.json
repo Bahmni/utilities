@@ -1,0 +1,106 @@
+[
+    {
+        "create": "bahmni-core",
+        "download": "https://github.com/Bahmni/bahmni-core/archive/master.zip",
+        "then": [
+            {
+                "copy": "bahmnicore-omod/src/main/resources",
+                "to": "bahmnicore-omod"
+            },
+            {
+                "copy": "openmrs-elis-atomfeed-client-omod/src/main/resources",
+                "to": "openmrs-elis-atomfeed-client-omod"
+            }
+        ]
+    },
+    {
+        "create": "openmrs-atomfeed",
+        "download": "https://github.com/ICT4H/openmrs-atomfeed/archive/master.zip",
+        "then": [
+            {
+                "copy": "openmrs-atomfeed-api/src/main/resources/liquibase.xml",
+                "to": ""
+            }
+        ]
+    },
+    {
+        "create": "openmrs-module-appframework",
+        "download": "https://github.com/openmrs/openmrs-module-appframework/archive/master.zip",
+        "then": [
+            {
+                "copy": "api/src/main/resources/liquibase.xml",
+                "to": ""
+            }
+        ]
+    },
+    {
+        "create": "openmrs-module-calculation",
+        "download": "https://github.com/openmrs/openmrs-module-calculation/archive/master.zip",
+        "then": [
+            {
+                "copy": "api/src/main/resources/liquibase.xml",
+                "to": ""
+            }
+        ]
+    },
+    {
+        "create": "openmrs-module-metadatamapping",
+        "download": "https://github.com/openmrs/openmrs-module-metadatamapping/archive/master.zip",
+        "then": [
+            {
+                "copy": "omod/src/main/resources/liquibase.xml",
+                "to": ""
+            }
+        ]
+    },
+    {
+        "create": "openmrs-module-providermanagement",
+        "download": "https://github.com/openmrs/openmrs-module-providermanagement/archive/2.2.zip",
+        "then": [
+            {
+                "copy": "api/src/main/resources/liquibase.xml",
+                "to": ""
+            }
+        ]
+    },
+    {
+        "create": "openmrs-module-uiframework",
+        "download": "https://github.com/openmrs/openmrs-module-uiframework/archive/master.zip",
+        "then": [
+            {
+                "copy": "api/src/main/resources/liquibase.xml",
+                "to": ""
+            }
+        ]
+    },
+    {
+        "create": "openmrs-module-bahmniapps",
+        "download": "https://github.com/Bahmni/openmrs-module-bahmniapps/archive/master.zip",
+        "then": [
+            {
+                "copy": "omod/src/main/resources",
+                "to": "resources"
+            }
+        ]
+    },
+    {
+        "create": "openmrs",
+        "download": "https://github.com/openmrs/openmrs-core/archive/1.10.2.zip",
+        "then": [
+            {
+                "copy": "api/src/main/resources",
+                "to": "resources"
+            }
+        ]
+    },
+    {
+        "create": "atomfeed",
+        "download": "https://github.com/ICT4H/atomfeed/archive/master.zip",
+        "then": [
+            {
+                "copy": "atomfeed-client/src/main/resources/sql",
+                "to": "sql"
+            }
+        ]
+    }
+]

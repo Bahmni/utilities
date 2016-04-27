@@ -1,0 +1,5 @@
+epel-release pgdg-centos92-9.2-6.noarch python-psycopg2 python-lxml PyXML python-setuptools libxslt-python pytz python-matplotlib python-babel python-mako python-dateutil pychart pydot python-reportlab python-devel python-imaging python-vobject hippo-canvas-python mx python-gdata python-ldap python-openid python-werkzeug python-vatnumber pygtk2 glade3 python python-psutil python-docutils make automake gcc gcc-c++ kernel-devel byacc poppler-utils pywebdav libpng-devel libjpeg-devel
+mysql mysql-server 
+postgresql92-libs postgresql92-server postgresql92 
+unzip zip wget git openssh puppet repoquery
+ntp ntpdate

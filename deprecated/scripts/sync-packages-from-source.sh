@@ -1,0 +1,5 @@
+rsync -arh --progress -i --itemize-changes --update --delete -p "ssh root@172.18.2.14:/packages/localrepo packages/"
+rsync -arh --progress -i --itemize-changes --update --delete -p "ssh root@172.18.2.14:/packages/python-packages packages/"
+rsync -arh --progress -i --itemize-changes --update --delete -p "ssh root@172.18.2.14:/packages/servers packages/"
+rsync -arh --progress -i --itemize-changes --update --delete -p "ssh root@172.18.2.14:/packages/tools packages/"
+rsync -arh --progress -i --itemize-changes --update --delete -p "ssh root@172.18.2.14:/packages/nagios-plugins packages/"

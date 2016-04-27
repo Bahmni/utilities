@@ -1,0 +1,56 @@
+#!/bin/sh
+
+
+bold=`tput bold`
+normal=`tput sgr0`
+
+execute() {
+  org=$1
+  repo=$2
+  root_dir=`pwd`
+  if !( ls "${root_dir}/${repo}" > /dev/null 2>&1 ) ; then
+    echo "${bold}Repo doesn't exist${normal}, Cloning: ${bold}git clone ${repo}${normal}"
+    git clone git@github.com:${org}/${repo}.git
+  fi
+
+  if ( ls "${root_dir}/${repo}/pom.xml" > /dev/null 2>&1 ) ; then
+    cd "${root_dir}/${repo}"
+    echo "\n${bold}In directory${normal}: ${root_dir}/${bold}${repo}${normal}, Executing: ${bold}${command}${normal}"
+    mvn clean install -DskipTests
+    cd ..
+  fi
+}
+executeb (){
+  execute "bhamni" $1
+}
+
+executeo (){
+  execute "openmrs" $1
+}
+
+executei (){
+  execute "ict4h" $1
+}
+
+executeb "bahmni-environment"
+executeb "bahmni-core"
+executeb "jss-config"
+executeb "bahmni-java-utils"
+executeb "openmrs-module-bahmniapps"
+executeb "openmrs-distro-bahmni"
+executeb "openerp-atomfeed-service"
+executeb "default-config"
+executeb "emr-functional-tests"
+executeb "openerp-modules"
+executeb "OpenElis"
+executeb "bahmni-reports"
+executeb "banyan-config"
+executeb "openmrs-module-idgen-webservices"
+executeb "possible-config"
+executei "openmrs-atomfeed"
+executei "atomfeed"
+executeo "openmrs-module-emrapi"
+executeo "openmrs-module-bedmanagement"
+executeo "openmrs-module-webservices.rest"
+executeo "openmrs-module-idgen"
+executeo "openmrs-core"

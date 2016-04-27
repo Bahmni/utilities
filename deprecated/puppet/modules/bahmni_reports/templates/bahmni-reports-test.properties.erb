@@ -1,0 +1,13 @@
+openelis.url=jdbc:postgresql://<%= @db_server %>:5432/clinlims
+openelis.username=clinlims
+openelis.password=clinlims
+openmrs.url=jdbc:mysql://<%= @db_server %>:3306/reports_integration_tests?allowMultiQueries=true
+openmrs.username=root
+openmrs.password=<%= @openmrs_database_password %>
+config.file.path=<%= @bahmniConfigDirectory %>/openmrs/apps/reports/reports.json
+openmrs.service.rootUrl=http://<%= @db_server %>:8080/openmrs/ws/rest/v1
+openmrs.service.user=admin
+openmrs.service.password=test
+openmrs.connectionTimeoutInMilliseconds=30000
+openmrs.replyTimeoutInMilliseconds=120000
+macrotemplates.temp.directory=/tmp/

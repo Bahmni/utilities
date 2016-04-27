@@ -1,0 +1,1 @@
+update sale_order set datetime_order=to_timestamp(to_char(date_order,'MM-DD-YYYY'),'MM-DD-YYYY');

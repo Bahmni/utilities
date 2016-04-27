@@ -1,0 +1,23 @@
+#Make sure this directory exists
+bahmnicore.images.directory=<%=@patientImagesDirectory%>
+bahmnicore.urls.patientimages=<%=@patientImagesUrl%>
+bahmnicore.documents.baseDirectory=<%=@documentBaseDirectory%>
+
+<% if @bahmni_openerp_required == "true" -%>
+openerp.port=<%=@openERPPort%>
+openerp.host=<%=@openERPHost%>
+openerp.database=<%=@openERPDatabase%>
+openerp.user=<%=@openERPUser%>
+openerp.password=<%=@openERPPassword%>
+openerp.connectionTimeoutInMilliseconds=<%=@openERPConnectTimeout%>
+openerp.replyTimeoutInMilliseconds=<%=@openERPReadTimeout%>
+<% end -%>
+
+
+<% if @bahmni_openelis_required == "true" -%>
+openelis.uri=<%=@openelisUri%>
+patient.feed.uri=<%=@patientFeedUri%>
+feed.maxFailedEvents=<%=@feedMaxFailedEvents%>
+feed.connectionTimeoutInMilliseconds=<%=@feedConnectionTimeoutInMilliseconds%>
+feed.replyTimeoutInMilliseconds=<%=@feedReplyTimeoutInMilliseconds%>
+<% end -%>

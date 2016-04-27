@@ -1,0 +1,5 @@
+[tw-bahmni]
+name=Bahmni TW Repository for RHEL/ CentOS $releasever - $basearch
+baseurl=<%= @bahmni_yum_repo_url %>
+enabled=1
+gpgcheck=0

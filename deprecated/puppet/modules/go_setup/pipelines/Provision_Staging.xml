@@ -1,0 +1,43 @@
+<pipeline name="Provision_Staging">
+    <params>
+        <param name="branch">release-5.5</param>
+    </params>
+    <materials>
+        <git url="https://github.com/Bahmni/bahmni-environment.git" branch="#{branch}" dest="bahmni-environment" autoUpdate="false" />
+    </materials>
+    <stage name="provision" cleanWorkingDir="true">
+        <approval type="manual" />
+        <jobs>
+            <job name="defaultJob">
+                <tasks>
+                    <exec command="sudo" workingdir="bahmni-environment">
+                        <arg>-E</arg>
+                        <arg>sh</arg>
+                        <arg>scripts/provision.sh</arg>
+                        <runif status="passed" />
+                    </exec>
+                    <exec command="sudo">
+                        <arg>cp</arg>
+                        <arg>-R</arg>
+                        <arg>/bahmni_temp/logs</arg>
+                        <arg>.</arg>
+                        <runif status="passed" />
+                    </exec>
+                    <exec command="sudo">
+                        <arg>chown</arg>
+                        <arg>-R</arg>
+                        <arg>go:go</arg>
+                        <arg>logs</arg>
+                        <runif status="passed" />
+                    </exec>
+                </tasks>
+                <resources>
+                    <resource>Staging</resource>
+                </resources>
+                <artifacts>
+                    <artifact src="logs" />
+                </artifacts>
+            </job>
+        </jobs>
+    </stage>
+</pipeline>

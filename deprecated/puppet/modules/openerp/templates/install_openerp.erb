@@ -1,0 +1,22 @@
+su - postgres -c "createuser --superuser openerp"
+su - postgres -c "createdb openerp --owner=openerp"
+
+cd /usr/local
+adduser openerp
+DIR="/var/run/openerp /var/log/openerp"
+for NAME in $DIR
+do
+if [ ! -d $NAME ]; then
+   mkdir $NAME
+   chown openerp.openerp $NAME
+fi
+done
+
+service openerp stop
+cp $1/$2 .
+tar -zxf $2 --transform 's!^[^/]\+\($\|/\)!openerp\1!'
+cd openerp
+python setup.py -q install
+cp openerp-server /usr/local/bin
+cp install/openerp-server.conf /etc
+chown openerp:openerp /etc/openerp-server.conf

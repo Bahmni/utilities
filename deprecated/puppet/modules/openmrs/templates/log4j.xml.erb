@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+   <appender name="fileAppender" class="org.apache.log4j.RollingFileAppender">
+        <param name="File" value="${catalina.base}/logs/openmrs.log"/>
+       <param name="MaxFileSize" value="10MB" />
+       <param name="MaxBackupIndex" value="10" />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d %-5p [%c] %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="EMAIL"  class="org.bahmni.util.EmailAppender">
+        <param name="BufferSize" value="512" />
+        <param name="SMTPHost" value="<%= @smtp_host %>" />
+        <param name="From" value="<%= @from_email %>" />
+        <param name="To" value="<%= @support_email %>" />
+        <param name="Subject" value="OpenMRS Error : " />
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern"
+                value="[%t] - %d %p [%c] - %m%n" />
+        </layout>
+        <filter class="org.apache.log4j.varia.LevelRangeFilter">
+            <param name="LevelMin" value="ERROR"/>
+            <param name="LevelMax" value="FATAL"/>
+        </filter>
+    </appender>
+
+    <appender name="asyncSMTPAppender" class="org.apache.log4j.AsyncAppender">
+        <appender-ref ref="EMAIL"/>
+        <param name="BufferSize" value="512" />
+        <param name="Blocking" value="false" />
+    </appender>
+
+    <logger name="org.apache">
+        <level value="WARN" />
+    </logger>
+
+    <logger name="org.hibernate">
+        <level value="ERROR" />
+    </logger>
+
+    <logger name="net.sf.ehcache">
+        <level value="ERROR" />
+    </logger>
+
+    <logger name="org.springframework">
+        <level value="WARN" />
+    </logger>
+
+    <logger name="org.openmrs">
+        <level value="WARN" />
+    </logger>
+
+    <logger name="org.bahmni">
+        <level value="WARN" />
+    </logger>
+
+    <!--
+         This controls the LoggingAdvice class that wraps around the OpenMRS services
+         WARN == don't log anything special for the services
+         INFO == log all setters
+         DEBUG == log all setters & log all getters & log execution time
+     -->
+    <logger name="org.openmrs.api">
+        <level value="WARN" />
+    </logger>
+
+    <logger name="org.apache.fop">
+        <level value="ERROR" />
+    </logger>
+
+    <!-- Hide the useless MissingResourceException -->
+    <logger name="org.springframework.context.support.ResourceBundleMessageSource">
+        <level value="ERROR" />
+    </logger>
+
+    <root>
+        <level value="WARN" />
+        <appender-ref ref="fileAppender" />
+        <% if @add_email_appender == true -%>
+          <appender-ref ref="asyncSMTPAppender" />
+        <% end -%>
+    </root>
+</log4j:configuration>

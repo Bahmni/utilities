@@ -1,0 +1,1195 @@
+
+  <pipelines group="build">
+    <pipeline name="bahmni-core">
+      <materials>
+        <git url="https://github.com/Bahmni/bahmni-core.git" dest="bahmni-core" autoUpdate="false" materialName="BahmniCore" />
+      </materials>
+      <stage name="build">
+        <jobs>
+          <job name="build">
+            <tasks>
+              <exec command="mvn" workingdir="bahmni-core">
+                <arg>clean</arg>
+                <arg>install</arg>
+                <arg>-DskipTests</arg>
+              </exec>
+            </tasks>
+            <resources>
+              <resource>MVN</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="bahmniJavaUtils" isLocked="false">
+      <materials>
+        <git url="https://github.com/Bahmni/bahmni-java-utils" dest="bahmni-java-utils" autoUpdate="false" materialName="BahmniJavaUtils" />
+      </materials>
+      <stage name="build">
+        <jobs>
+          <job name="build">
+            <tasks>
+              <exec command="mvn" workingdir="bahmni-java-utils">
+                <arg>clean</arg>
+                <arg>install</arg>
+                <arg>-DskipTests</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="Build_Bahmni">
+      <params>
+        <param name="branch">master</param>
+        <param name="implementationName">possible</param>
+        <param name="bahmni_version">5.4-SNAPSHOT</param>
+      </params>
+      <environmentvariables>
+        <variable name="FACTER_package_bahmni_openerp">
+          <value>false</value>
+        </variable>
+      </environmentvariables>
+      <materials>
+        <git url="https://github.com/Bahmni/OpenELIS.git" branch="#{branch}" dest="OpenElis" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/#{implementationName}-config.git" branch="#{branch}" dest="#{implementationName}-config" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/openmrs-module-bahmniapps.git" branch="#{branch}" dest="openmrs-module-bahmniapps" autoUpdate="false" materialName="openmrs-module-bahmniapps" />
+        <git url="https://github.com/Bahmni/openmrs-distro-bahmni.git" branch="#{branch}" dest="openmrs-distro-bahmni" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/bahmni-environment" branch="#{branch}" dest="bahmni-environment" autoUpdate="false" materialName="bahmni-environment" />
+        <git url="https://github.com/Bahmni/client_side_logging" dest="client_side_logging_source" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/bahmni-reports.git" branch="#{branch}" dest="bahmni-reports" autoUpdate="false" />
+      </materials>
+      <stage name="defaultStage">
+        <jobs>
+          <job name="ClientSideLogging">
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="client_side_logging_source/client_side_logging.py" dest="client_side_logging" />
+              <artifact src="client_side_logging_source/client_side_logging.wsgi" dest="client_side_logging" />
+              <artifact src="client_side_logging_source/__init__.py" dest="client_side_logging" />
+              <artifact src="client_side_logging_source/logging.yml" dest="client_side_logging" />
+              <artifact src="client_side_logging_source/RotatingLogger.py" dest="client_side_logging" />
+            </artifacts>
+          </job>
+          <job name="Distro">
+            <tasks>
+              <exec command="mvn" workingdir="openmrs-distro-bahmni">
+                <arg>clean</arg>
+                <arg>install</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="openmrs-distro-bahmni/distro/target/distro-*.zip" dest="deployables" />
+            </artifacts>
+          </job>
+          <job name="OpenElis">
+            <tasks>
+              <exec command="mkdir">
+                <arg>-p</arg>
+                <arg>deployables</arg>
+                <runif status="passed" />
+              </exec>
+              <ant target="dist" workingdir="OpenElis">
+                <runif status="passed" />
+              </ant>
+              <exec command="cp">
+                <arg>OpenElis/openelis/dist/openelis.war</arg>
+                <arg>deployables</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="cp">
+                <arg>OpenElis/OpenElis.zip</arg>
+                <arg>deployables</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="curl">
+                <arg>-o</arg>
+                <arg>go_revisions.sh</arg>
+                <arg>https://raw.githubusercontent.com/Bahmni/bahmni-environment/master/scripts/ci/go_revisions.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="chmod">
+                <arg>a+x</arg>
+                <arg>go_revisions.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash">
+                <arg>-c</arg>
+                <arg>./go_revisions.sh &gt; deployables/bahmni_openelis_revision.txt</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="deployables" />
+            </artifacts>
+          </job>
+          <job name="ImplementationConfig">
+            <tasks>
+              <exec command="/bin/bash" workingdir="#{implementationName}-config">
+                <arg>--login</arg>
+                <arg>scripts/package.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="#{implementationName}-config/target/#{implementationName}_config.zip" dest="deployables" />
+            </artifacts>
+          </job>
+          <job name="BahmniApps">
+            <tasks>
+              <exec command="bower" workingdir="openmrs-module-bahmniapps/ui">
+                <arg>cache</arg>
+                <arg>clean</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash" workingdir="openmrs-module-bahmniapps/ui">
+                <arg>--login</arg>
+                <arg>scripts/package.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="mvn" workingdir="openmrs-module-bahmniapps">
+                <arg>clean</arg>
+                <arg>package</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="openmrs-module-bahmniapps/ui/target/bahmniapps.zip" dest="deployables" />
+              <artifact src="openmrs-module-bahmniapps/omod/target/bahmniapps-#{bahmni_version}.omod" dest="deployables/ui-modules" />
+            </artifacts>
+          </job>
+          <job name="BahmniEnvironment">
+            <tasks>
+              <exec command="sh" workingdir="bahmni-environment">
+                <arg>scripts/validate-manifests.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="zip">
+                <arg>-r</arg>
+                <arg>bahmni-environment.zip</arg>
+                <arg>bahmni-environment</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="bahmni-environment.zip" />
+            </artifacts>
+          </job>
+          <job name="BahmniReports">
+            <tasks>
+              <exec command="mvn" workingdir="bahmni-reports">
+                <arg>clean</arg>
+                <arg>install</arg>
+                <arg>-DskipTests</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="bahmni-reports/target/bahmnireports.war" dest="deployables" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="package">
+        <jobs>
+          <job name="Fetch">
+            <tasks>
+              <fetchartifact pipeline="Build_Bahmni" stage="defaultStage" job="Distro" srcdir="deployables">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build_Bahmni" stage="defaultStage" job="BahmniApps" srcdir="deployables">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build_Bahmni" stage="defaultStage" job="OpenElis" srcdir="deployables" dest="elis">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build_Bahmni" stage="defaultStage" job="ImplementationConfig" srcfile="deployables/#{implementationName}_config.zip" dest="deployables-implementation">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build_Bahmni" stage="defaultStage" job="BahmniEnvironment" srcfile="bahmni-environment.zip">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build_Bahmni" stage="defaultStage" job="ClientSideLogging" srcdir="client_side_logging" dest="deployables">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build_Bahmni" stage="defaultStage" job="BahmniReports" srcfile="deployables/bahmnireports.war" dest="deployables-reports/">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="cp">
+                <arg>bahmni-environment/scripts/ci/bahmni_deploy.sh</arg>
+                <arg>deployables</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/sh">
+                <arg>bahmni-environment/scripts/ci/create_all_modules.sh</arg>
+                <arg>#{implementationName}</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="bahmni_installer.sh" />
+              <artifact src="#{implementationName}_config_installer.sh" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="Build_config">
+      <materials>
+        <git url="https://github.com/Bahmni/possible-config.git" dest="possible-config" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/bahmni-environment" dest="bahmni-environment" autoUpdate="false" materialName="bahmni-environment" />
+      </materials>
+      <stage name="defaultStage">
+        <jobs>
+          <job name="Config">
+            <tasks>
+              <exec command="/bin/bash" workingdir="possible-config">
+                <arg>--login</arg>
+                <arg>scripts/package.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="possible-config/target/possible_config.zip" dest="deployables" />
+            </artifacts>
+          </job>
+          <job name="BahmniEnvironment">
+            <tasks>
+              <exec command="sh" workingdir="bahmni-environment">
+                <arg>scripts/validate-manifests.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="zip">
+                <arg>-r</arg>
+                <arg>bahmni-environment.zip</arg>
+                <arg>bahmni-environment</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="bahmni-environment.zip" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="package">
+        <jobs>
+          <job name="installer">
+            <tasks>
+              <fetchartifact pipeline="Build_config" stage="defaultStage" job="Config" srcfile="deployables/possible_config.zip" dest="deployables-implementation">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build_config" stage="defaultStage" job="BahmniEnvironment" srcfile="bahmni-environment.zip">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="/bin/sh">
+                <arg>bahmni-environment/scripts/ci/create_all_modules.sh</arg>
+                <arg>possible</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <artifacts>
+              <artifact src="possible_config_installer.sh" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="Build_bahmni_reports" template="Build_bahmni">
+      <materials>
+        <git url="https://github.com/Bahmni/bahmni-reports.git" dest="bahmni-reports" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/bahmni-environment" dest="bahmni-environment" autoUpdate="false" materialName="bahmni-environment" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="passive">
+    <pipeline name="backupAllDBs" isLocked="false" template="backup-all-dbs">
+      <timer>0 0 23 1/1 * ? *</timer>
+      <materials>
+        <git url="https://github.com/Bahmni/bahmni-environment.git" dest="bahmni-environment" autoUpdate="false" />
+      </materials>
+    </pipeline>
+    <pipeline name="SwitchToPassive">
+      <materials>
+        <git url="https://github.com/Bahmni/bahmni-environment" dest="bahmni-environment" autoUpdate="false" materialName="Bahmni-Environment" />
+      </materials>
+      <stage name="switch">
+        <jobs>
+          <job name="switch">
+            <tasks>
+              <exec command="sudo" workingdir="bahmni-environment">
+                <arg>/bin/bash</arg>
+                <arg>scripts/run-puppet-module.sh</arg>
+                <arg>passive_to_active</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="EmailLogsPassive" template="EmailLogs">
+      <params>
+        <param name="emailUsername">logsaggregator@gmail.com</param>
+        <param name="emailPassword">logsbahmni</param>
+        <param name="toEmail">bahmni_support_possible@googlegroups.com</param>
+        <param name="fromEmail">logsaggregator@gmail.com</param>
+      </params>
+      <materials>
+        <git url="https://github.com/Bahmni/log_aggregator" dest="log_aggregator" autoUpdate="false" materialName="LogAggregator" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="production">
+    <pipeline name="EmailLogsProduction" isLocked="false" template="EmailLogs">
+      <params>
+        <param name="emailUsername">logsaggregator@gmail.com</param>
+        <param name="emailPassword">logsbahmni</param>
+        <param name="toEmail">bahmni_support_possible@googlegroups.com</param>
+        <param name="fromEmail">logsaggregator@gmail.com</param>
+      </params>
+      <materials>
+        <git url="https://github.com/Bahmni/log_aggregator" dest="log_aggregator" autoUpdate="false" materialName="LogAggregator" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="preprod">
+    <pipeline name="tomcat-restart">
+      <materials>
+        <git url="https://github.com/Bahmni/bahmni-environment" autoUpdate="false" />
+      </materials>
+      <stage name="restart">
+        <jobs>
+          <job name="restart">
+            <tasks>
+              <exec command="sudo">
+                <arg>service</arg>
+                <arg>tomcat</arg>
+                <arg>restart</arg>
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="EmailLogsPreProd" isLocked="false" template="EmailLogs">
+      <params>
+        <param name="emailUsername">logsaggregator@gmail.com</param>
+        <param name="emailPassword">logsbahmni</param>
+        <param name="toEmail">bahmni_support_possible@googlegroups.com</param>
+        <param name="fromEmail">logsaggregator@gmail.com</param>
+      </params>
+      <materials>
+        <git url="https://github.com/Bahmni/log_aggregator" dest="log_aggregator" autoUpdate="false" materialName="LogAggregator" />
+      </materials>
+    </pipeline>
+  </pipelines>
+  <pipelines group="deployment">
+    <pipeline name="Build_Deploy_Bahmni">
+      <params>
+        <param name="branch">master</param>
+        <param name="implementationName">possible</param>
+        <param name="bahmni_version">5.4-SNAPSHOT</param>
+      </params>
+      <environmentvariables>
+        <variable name="FACTER_package_bahmni_openerp">
+          <value>false</value>
+        </variable>
+      </environmentvariables>
+      <materials>
+        <git url="https://github.com/Bahmni/OpenELIS.git" branch="#{branch}" dest="OpenElis" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/#{implementationName}-config.git" branch="#{branch}" dest="#{implementationName}-config" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/openmrs-module-bahmniapps.git" branch="#{branch}" dest="openmrs-module-bahmniapps" autoUpdate="false" materialName="openmrs-module-bahmniapps" />
+        <git url="https://github.com/Bahmni/openmrs-distro-bahmni.git" branch="#{branch}" dest="openmrs-distro-bahmni" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/bahmni-environment" branch="#{branch}" dest="bahmni-environment" autoUpdate="false" materialName="bahmni-environment" />
+        <git url="https://github.com/Bahmni/client_side_logging" dest="client_side_logging_source" autoUpdate="false" />
+        <git url="https://github.com/Bahmni/bahmni-reports.git" branch="#{branch}" dest="bahmni-reports" autoUpdate="false" />
+      </materials>
+      <stage name="defaultStage" artifactCleanupProhibited="true">
+        <jobs>
+          <job name="ClientSideLogging">
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="client_side_logging_source/client_side_logging.py" dest="client_side_logging" />
+              <artifact src="client_side_logging_source/client_side_logging.wsgi" dest="client_side_logging" />
+              <artifact src="client_side_logging_source/__init__.py" dest="client_side_logging" />
+              <artifact src="client_side_logging_source/logging.yml" dest="client_side_logging" />
+              <artifact src="client_side_logging_source/RotatingLogger.py" dest="client_side_logging" />
+            </artifacts>
+          </job>
+          <job name="Distro">
+            <tasks>
+              <exec command="mvn" workingdir="openmrs-distro-bahmni">
+                <arg>clean</arg>
+                <arg>install</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="openmrs-distro-bahmni/distro/target/distro-*.zip" dest="deployables" />
+            </artifacts>
+          </job>
+          <job name="OpenElis">
+            <tasks>
+              <ant target="dist" workingdir="OpenElis">
+                <runif status="passed" />
+              </ant>
+              <exec command="curl">
+                <arg>-o</arg>
+                <arg>go_revisions.sh</arg>
+                <arg>https://raw.githubusercontent.com/Bhamni/bahmni-environment/master/scripts/ci/go_revisions.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="chmod">
+                <arg>a+x</arg>
+                <arg>go_revisions.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash">
+                <arg>-c</arg>
+                <arg>./go_revisions.sh &gt; bahmni_openelis_revision.txt</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="OpenElis/openelis/dist/openelis.war" dest="deployables" />
+              <artifact src="OpenElis/OpenElis.zip" dest="deployables" />
+              <artifact src="bahmni_openelis_revision.txt" dest="deployables" />
+            </artifacts>
+          </job>
+          <job name="ImplementationConfig">
+            <tasks>
+              <exec command="/bin/bash" workingdir="#{implementationName}-config">
+                <arg>--login</arg>
+                <arg>scripts/package.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="#{implementationName}-config/target/#{implementationName}_config.zip" dest="deployables" />
+            </artifacts>
+          </job>
+          <job name="BahmniApps">
+            <tasks>
+              <exec command="bower" workingdir="openmrs-module-bahmniapps/ui">
+                <arg>cache</arg>
+                <arg>clean</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/bash" workingdir="openmrs-module-bahmniapps/ui">
+                <arg>--login</arg>
+                <arg>scripts/package.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="mvn" workingdir="openmrs-module-bahmniapps">
+                <arg>clean</arg>
+                <arg>package</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="openmrs-module-bahmniapps/ui/target/bahmniapps.zip" dest="deployables" />
+              <artifact src="openmrs-module-bahmniapps/omod/target/bahmniapps-#{bahmni_version}.omod" dest="deployables/ui-modules" />
+            </artifacts>
+          </job>
+          <job name="BahmniEnvironment">
+            <tasks>
+              <exec command="sh" workingdir="bahmni-environment">
+                <arg>scripts/validate-manifests.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="zip">
+                <arg>-r</arg>
+                <arg>bahmni-environment.zip</arg>
+                <arg>bahmni-environment</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="bahmni-environment.zip" />
+            </artifacts>
+          </job>
+          <job name="BahmniReports">
+            <tasks>
+              <exec command="mvn" workingdir="bahmni-reports">
+                <arg>clean</arg>
+                <arg>install</arg>
+                <arg>-DskipTests</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="bahmni-reports/target/bahmnireports.war" dest="deployables" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="package" artifactCleanupProhibited="true">
+        <jobs>
+          <job name="Fetch">
+            <tasks>
+              <fetchartifact pipeline="" stage="defaultStage" job="Distro" srcdir="deployables">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="" stage="defaultStage" job="BahmniApps" srcdir="deployables">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="" stage="defaultStage" job="OpenElis" srcdir="deployables" dest="elis">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="" stage="defaultStage" job="ImplementationConfig" srcfile="deployables/#{implementationName}_config.zip" dest="deployables-implementation">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="" stage="defaultStage" job="BahmniEnvironment" srcfile="bahmni-environment.zip">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="" stage="defaultStage" job="ClientSideLogging" srcdir="client_side_logging" dest="deployables">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="" stage="defaultStage" job="BahmniReports" srcfile="deployables/bahmnireports.war" dest="deployables-reports/">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="cp">
+                <arg>bahmni-environment/scripts/ci/bahmni_deploy.sh</arg>
+                <arg>deployables</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="/bin/sh">
+                <arg>bahmni-environment/scripts/ci/create_all_modules.sh</arg>
+                <arg>#{implementationName}</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="bahmni_installer.sh" />
+              <artifact src="#{implementationName}_config_installer.sh" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="deploy_to_preprod">
+        <approval type="manual" />
+        <environmentvariables>
+          <variable name="FACTER_implementation_name">
+            <value>possible</value>
+          </variable>
+          <variable name="FACTER_deploy_bahmni_openelis">
+            <value>true</value>
+          </variable>
+          <variable name="FACTER_deploy_bahmni_openerp">
+            <value>false</value>
+          </variable>
+        </environmentvariables>
+        <jobs>
+          <job name="deploy">
+            <tasks>
+              <fetchartifact pipeline="Build_Deploy_Bahmni" stage="package" job="Fetch" srcfile="bahmni_installer.sh" dest="preprod_deploy_artefacts">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build_Deploy_Bahmni" stage="package" job="Fetch" srcfile="possible_config_installer.sh" dest="preprod_deploy_artefacts">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="sudo" workingdir="preprod_deploy_artefacts">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>bahmni_installer.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="sudo" workingdir="preprod_deploy_artefacts">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>possible_config_installer.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>PreProd</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="predeploy_slave">
+        <approval type="manual" />
+        <jobs>
+          <job name="predeploy_slave">
+            <tasks>
+              <exec command="sudo" workingdir="bahmni-environment">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>scripts/predeploy-slave.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>PASSIVE</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="predeploy_master">
+        <jobs>
+          <job name="predeploy_master">
+            <tasks>
+              <exec command="sudo" workingdir="bahmni-environment">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>scripts/predeploy-master.sh</arg>
+                <arg>password</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>ACTIVE</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="deploy_master">
+        <environmentvariables>
+          <variable name="FACTER_implementation_name">
+            <value>possible</value>
+          </variable>
+          <variable name="FACTER_deploy_bahmni_openelis">
+            <value>true</value>
+          </variable>
+          <variable name="FACTER_deploy_bahmni_openerp">
+            <value>false</value>
+          </variable>
+        </environmentvariables>
+        <jobs>
+          <job name="deploy">
+            <tasks>
+              <fetchartifact pipeline="Build_Deploy_Bahmni" stage="package" job="Fetch" srcfile="bahmni_installer.sh" dest="prod_deploy_artefacts">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build_Deploy_Bahmni" stage="package" job="Fetch" srcfile="possible_config_installer.sh" dest="prod_deploy_artefacts">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="sudo" workingdir="prod_deploy_artefacts">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>bahmni_installer.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="sudo" workingdir="prod_deploy_artefacts">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>possible_config_installer.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>ACTIVE</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="deploy_slave">
+        <environmentvariables>
+          <variable name="FACTER_bahmni_server_type">
+            <value>passive</value>
+          </variable>
+          <variable name="FACTER_implementation_name">
+            <value>possible</value>
+          </variable>
+          <variable name="FACTER_deploy_bahmni_openelis">
+            <value>true</value>
+          </variable>
+          <variable name="FACTER_deploy_bahmni_openerp">
+            <value>false</value>
+          </variable>
+        </environmentvariables>
+        <jobs>
+          <job name="deploy">
+            <tasks>
+              <fetchartifact pipeline="Build_Deploy_Bahmni" stage="package" job="Fetch" srcfile="bahmni_installer.sh" dest="prod_deploy_artefacts">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="Build_Deploy_Bahmni" stage="package" job="Fetch" srcfile="possible_config_installer.sh" dest="prod_deploy_artefacts">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="sudo" workingdir="prod_deploy_artefacts">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>bahmni_installer.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="sudo" workingdir="prod_deploy_artefacts">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>possible_config_installer.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>PASSIVE</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="postdeploy_master">
+        <jobs>
+          <job name="postdeploy_master">
+            <tasks>
+              <exec command="sudo" workingdir="bahmni-environment">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>scripts/postdeploy-master.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>ACTIVE</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="postdeploy_slave">
+        <jobs>
+          <job name="postdeploy_slave">
+            <tasks>
+              <exec command="sudo" workingdir="bahmni-environment">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>scripts/postdeploy-slave.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>PASSIVE</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="Deploy_config">
+      <environmentvariables>
+        <variable name="FACTER_implementation_name">
+          <value>possible</value>
+        </variable>
+        <variable name="FACTER_deploy_bahmni_openelis">
+          <value>true</value>
+        </variable>
+        <variable name="FACTER_deploy_bahmni_openerp">
+          <value>false</value>
+        </variable>
+      </environmentvariables>
+      <materials>
+        <pipeline pipelineName="Build_config" stageName="package" />
+      </materials>
+      <stage name="deploy_preprod">
+        <jobs>
+          <job name="deploy">
+            <tasks>
+              <fetchartifact pipeline="Build_config" stage="package" job="installer" srcfile="possible_config_installer.sh">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="sudo">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>possible_config_installer.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>PreProd</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="deploy_passive">
+        <approval type="manual" />
+        <environmentvariables>
+          <variable name="FACTER_bahmni_server_type">
+            <value>passive</value>
+          </variable>
+        </environmentvariables>
+        <jobs>
+          <job name="deploy">
+            <tasks>
+              <fetchartifact pipeline="Build_config" stage="package" job="installer" srcfile="possible_config_installer.sh">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="sudo">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>possible_config_installer.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>PASSIVE</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="deploy_active">
+        <jobs>
+          <job name="deploy">
+            <tasks>
+              <fetchartifact pipeline="Build_config" stage="package" job="installer" srcfile="possible_config_installer.sh">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="sudo">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>possible_config_installer.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>ACTIVE</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="Deploy_reports">
+      <materials>
+        <pipeline pipelineName="Build_bahmni_reports" stageName="package" materialName="bahmni_reports_installer.sh" />
+      </materials>
+      <stage name="deploy_preprod">
+        <jobs>
+          <job name="deploy">
+            <tasks>
+              <fetchartifact pipeline="Build_bahmni_reports" stage="package" job="installer" srcfile="bahmni_reports_installer.sh">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="sudo">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>bahmni_reports_installer.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>PreProd</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="deploy_passive">
+        <approval type="manual" />
+        <environmentvariables>
+          <variable name="FACTER_bahmni_server_type">
+            <value>passive</value>
+          </variable>
+        </environmentvariables>
+        <jobs>
+          <job name="deploy">
+            <tasks>
+              <fetchartifact pipeline="Build_bahmni_reports" stage="package" job="installer" srcfile="bahmni_reports_installer.sh">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="sudo">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>bahmni_reports_installer.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>PASSIVE</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="deploy_active">
+        <jobs>
+          <job name="deploy">
+            <tasks>
+              <fetchartifact pipeline="Build_bahmni_reports" stage="package" job="installer" srcfile="bahmni_reports_installer.sh">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="sudo">
+                <arg>-E</arg>
+                <arg>sh</arg>
+                <arg>bahmni_reports_installer.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>ACTIVE</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+  </pipelines>
+  <templates>
+    <pipeline name="backup-all-dbs">
+      <stage name="backup">
+        <jobs>
+          <job name="backup">
+            <tasks>
+              <exec command="sudo" workingdir="bahmni-environment">
+                <arg>/bin/sh</arg>
+                <arg>scripts/ci/backup-all-dbs.sh</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>PASSIVE</resource>
+            </resources>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="sync">
+        <jobs>
+          <job name="sync">
+            <tasks>
+              <exec command="sudo">
+                <arg>rsync</arg>
+                <arg>-azP</arg>
+                <arg>/backup/</arg>
+                <arg>root@10.0.0.30:/db_backup</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="RestartTomcat">
+      <stage name="restart" fetchMaterials="false">
+        <jobs>
+          <job name="restart">
+            <tasks>
+              <exec command="sudo">
+                <arg>service</arg>
+                <arg>tomcat</arg>
+                <arg>restart</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="Build_bahmni">
+      <stage name="defaultStage">
+        <jobs>
+          <job name="Build">
+            <tasks>
+              <exec command="mvn" workingdir="bahmni-reports">
+                <arg>clean</arg>
+                <arg>install</arg>
+                <arg>-DskipTests</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="bahmni-reports/target/bahmnireports.war" dest="deployables" />
+            </artifacts>
+          </job>
+          <job name="BahmniEnvironment">
+            <tasks>
+              <exec command="sh" workingdir="bahmni-environment">
+                <arg>scripts/validate-manifests.sh</arg>
+                <runif status="passed" />
+              </exec>
+              <exec command="zip">
+                <arg>-r</arg>
+                <arg>bahmni-environment.zip</arg>
+                <arg>bahmni-environment</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="bahmni-environment.zip" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="package">
+        <jobs>
+          <job name="installer">
+            <tasks>
+              <fetchartifact pipeline="" stage="defaultStage" job="Build" srcfile="deployables/bahmnireports.war" dest="deployables-reports/">
+                <runif status="passed" />
+              </fetchartifact>
+              <fetchartifact pipeline="" stage="defaultStage" job="BahmniEnvironment" srcfile="bahmni-environment.zip" dest="deployables-reports/">
+                <runif status="passed" />
+              </fetchartifact>
+              <exec command="/bin/sh">
+                <arg>bahmni-environment/scripts/ci/create_module_installer.sh</arg>
+                <arg>deployables-reports</arg>
+                <arg>bahmni_reports_installer.sh</arg>
+                <arg>"Bahmni Reports Installer"</arg>
+                <arg>bahmni_reports</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <resources>
+              <resource>BuildBhamni</resource>
+            </resources>
+            <artifacts>
+              <artifact src="bahmni_reports_installer.sh" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+    <pipeline name="EmailLogs">
+      <stage name="aggregateLogs">
+        <jobs>
+          <job name="aggregate" runOnAllAgents="true">
+            <tasks>
+              <exec command="python" workingdir="log_aggregator">
+                <arg>Controller.py</arg>
+                <arg>#{emailUsername}</arg>
+                <arg>#{emailPassword}</arg>
+                <arg>#{fromEmail}</arg>
+                <arg>#{toEmail}</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <artifacts>
+              <artifact src="log_aggregator/log_file*.zip" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+  </templates>
+  <environments>
+    <environment name="Passive">
+      <environmentvariables>
+        <variable name="FACTER_bahmni_server_type">
+          <value>passive</value>
+        </variable>
+        <variable name="FACTER_bahmni_user_name">
+          <value>bahmni</value>
+        </variable>
+        <variable name="FACTER_deploy_bahmni_openelis">
+          <value>true</value>
+        </variable>
+        <variable name="FACTER_deploy_bahmni_openerp">
+          <value>false</value>
+        </variable>
+        <variable name="FACTER_implementation_name">
+          <value>possible</value>
+        </variable>
+      </environmentvariables>
+      <agents>
+        <physical uuid="288782f4-ca0b-4be0-8b8f-a7ac55805200" />
+      </agents>
+      <pipelines>
+        <pipeline name="backupAllDBs" />
+        <pipeline name="EmailLogsPassive" />
+      </pipelines>
+    </environment>
+    <environment name="PreProd">
+      <environmentvariables>
+        <variable name="JAVA_HOME">
+          <value>/usr/java/default</value>
+        </variable>
+      </environmentvariables>
+      <agents>
+        <physical uuid="19a4d41f-506d-4c6d-b451-dc84728b56a0" />
+      </agents>
+      <pipelines>
+        <pipeline name="bahmni-core" />
+        <pipeline name="bahmniJavaUtils" />
+        <pipeline name="Build_Bahmni" />
+        <pipeline name="Build_bahmni_reports" />
+        <pipeline name="Build_config" />
+        <pipeline name="EmailLogsPreProd" />
+        <pipeline name="tomcat-restart" />
+      </pipelines>
+    </environment>
+    <environment name="Production">
+      <environmentvariables>
+        <variable name="FACTER_bahmni_user_name">
+          <value>bahmni</value>
+        </variable>
+        <variable name="FACTER_deploy_bahmni_openelis">
+          <value>true</value>
+        </variable>
+        <variable name="FACTER_deploy_bahmni_openerp">
+          <value>false</value>
+        </variable>
+        <variable name="FACTER_implementation_name">
+          <value>possible</value>
+        </variable>
+      </environmentvariables>
+      <agents>
+        <physical uuid="fd1c2351-d983-42d2-b4e9-800461f45334" />
+      </agents>
+      <pipelines>
+        <pipeline name="EmailLogsProduction" />
+      </pipelines>
+    </environment>
+    <environment name="Deployment">
+      <agents>
+        <physical uuid="fd1c2351-d983-42d2-b4e9-800461f45334" />
+        <physical uuid="288782f4-ca0b-4be0-8b8f-a7ac55805200" />
+        <physical uuid="19a4d41f-506d-4c6d-b451-dc84728b56a0" />
+      </agents>
+      <pipelines>
+        <pipeline name="Build_Deploy_Bahmni" />
+        <pipeline name="Deploy_config" />
+        <pipeline name="Deploy_reports" />
+      </pipelines>
+    </environment>
+  </environments>

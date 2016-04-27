@@ -1,0 +1,1 @@
+mysql -uroot -ppassword -e "use openmrs; delete from schema_version where version_rank = $1; select * from schema_version;"

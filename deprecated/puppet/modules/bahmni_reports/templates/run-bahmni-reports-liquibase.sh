@@ -1,0 +1,1 @@
+java -Dliquibase.databaseChangeLogTableName=liquibasechangelog -Dliquibase.databaseChangeLogLockTableName=liquibasechangeloglock -DschemaName=openmrs -jar <%= @liquibase_jar %> --url=jdbc:mysql://<%= @db_server %>:3306/openmrs --changeLogFile=liquibase.xml --classpath=<%= @mysql_driver_path %> --classpath=<%= @bahmni_reports_war_path %> --username=root --password=password update
