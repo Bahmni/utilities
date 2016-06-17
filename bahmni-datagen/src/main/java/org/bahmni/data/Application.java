@@ -5,6 +5,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import org.bahmni.data.pojo.PatientProfile;
 import org.bahmni.data.pojo.PatientProgram;
+import org.bahmni.data.pojo.Visit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +27,7 @@ public class Application implements CommandLineRunner {
 
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
-    public static final String URL_PREFIX = "http://192.168.33.10:8080/openmrs/ws/rest/v1/";
+    public static final String URL_PREFIX = "http://192.168.33.10:8050/openmrs/ws/rest/v1/";
     public static final String PATIENT_PROFILE = URL_PREFIX+"patientprofile";
     public static final String BAHMNI_PATIENT_PROGRAM = URL_PREFIX + "bahmniprogramenrollment";
     public static final String BAHMNI_ENCOUNTER = URL_PREFIX + "bahmnicore/bahmniencounter";
@@ -46,7 +47,7 @@ public class Application implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        String idPrefix = "AAAC";
+        String idPrefix = "ABCD";
         int errors = 0;
         for(int i = 0; i < 500 ; i++){
             try{
@@ -69,7 +70,12 @@ public class Application implements CommandLineRunner {
         createVisit(patientUuid,patientProgramUuid,"createEncounterBasicProgram.ftl");
 
         patientProgramUuid = associatePatientToProgram(patientUuid,id,"secondProgram.ftl");
-        createVisit(patientUuid,patientProgramUuid,"createEncounterSecondProgram.ftl");
+        Visit secondaryVisit = createVisit(patientUuid,patientProgramUuid,"createEncounterSecondProgram.ftl");
+        createObservation(patientUuid,patientProgramUuid, "labResultBiochemistryForm_Observation.ftl", secondaryVisit);
+        createObservation(patientUuid,patientProgramUuid, "baselineForm_Observation.ftl", secondaryVisit);
+        createObservation(patientUuid,patientProgramUuid, "treatmentInitiationForm_Observation.ftl", secondaryVisit);
+        createObservation(patientUuid,patientProgramUuid,"adverseEventsForm_Observation.ftl", secondaryVisit);
+        createObservation(patientUuid,patientProgramUuid,"seriousAdverseEventsForm_Observation.ftl", secondaryVisit);
     }
 
     private String createPatient(String id)
@@ -107,12 +113,32 @@ public class Application implements CommandLineRunner {
         return patientProgramEntity.getBody().getUuid();
     }
 
-    private void createVisit(String patientUuid, String patientProgramUuid,String templateName) throws IOException, TemplateException {
+    private Visit createVisit(String patientUuid, String patientProgramUuid, String templateName) throws IOException, TemplateException {
         Template freemarkerTemplate = freeMarkerConfig.getTemplate(templateName);
 
         Map<String,Object> patientData = new HashMap<>();
         patientData.put("patientUuid",patientUuid);
         patientData.put("patientProgramUuid",patientProgramUuid);
+
+        StringWriter stringWriter = new StringWriter();
+        freemarkerTemplate.process(patientData,stringWriter);
+        String requestJson = stringWriter.toString();
+
+        HttpEntity<String> entity = new HttpEntity<>(requestJson,httpHeaders);
+        ResponseEntity<Visit> patientProgramEntity = restTemplate.postForEntity(BAHMNI_ENCOUNTER,entity,Visit.class);
+        log.debug(patientProgramEntity.getBody().toString());
+        return patientProgramEntity.getBody();
+    }
+
+    private void createObservation(String patientUuid, String patientProgramUuid, String templateName, Visit visitDetails) throws IOException, TemplateException {
+        Template freemarkerTemplate = freeMarkerConfig.getTemplate(templateName);
+
+        Map<String,Object> patientData = new HashMap<>();
+        patientData.put("patientUuid",patientUuid);
+        patientData.put("patientProgramUuid",patientProgramUuid);
+        patientData.put("visitUuid", visitDetails.getVisitUuid());
+        patientData.put("encounterUuid", visitDetails.getEncounterUuid());
+        patientData.put("encounterDateTime", visitDetails.getEncounterDateTime());
 
         StringWriter stringWriter = new StringWriter();
         freemarkerTemplate.process(patientData,stringWriter);
