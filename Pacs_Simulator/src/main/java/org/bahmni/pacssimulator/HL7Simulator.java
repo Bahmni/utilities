@@ -29,8 +29,8 @@ public class HL7Simulator {
         String orthancPostInstanceUrl = "http://192.168.33.10:8042/instances";
         String dcm4cheePostUrl = "DCM4CHEE@192.168.33.10:11112";
         String dicomClient;
-        String postUrl = null;
-        DicomClient client = new Dcm4cheeClient(null);
+        String postUrl = dcm4cheePostUrl;
+        DicomClient client = new Dcm4cheeClient(dcm4cheePostUrl);
 
         if (args.length > 0) {
             if (args.length >= 1)
@@ -47,7 +47,6 @@ public class HL7Simulator {
                     client = new OrthancClient(postUrl);
                 }
                 else {
-                    postUrl = dcm4cheePostUrl;
                     if (args.length >= 4) {
                         postUrl = args[3];
                     }
