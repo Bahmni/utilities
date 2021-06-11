@@ -44,7 +44,7 @@ public class OrderMessageHandler implements ReceivingApplication {
                 return HL7Utils.generateACK(ormMessage.getMSH().getMessageControlID().getValue(), "BahmniEMR");
             }
             System.out.println("Recieved Order on modality for patient : "+ormMessage.getPATIENT().getPID().getPatientIdentifierList(0).getIDNumber().getValue());
-            modifiedDicomFile = dicomFile.modifyDicomAsPerOrder(ormMessage);
+            modifiedDicomFile = dicomFile.generateFor(ormMessage);
             dicomClient.post(modifiedDicomFile);
 //            String encodedMessage = new PipeParser().encode(message);
 //            log.debug("Received message:\n" + encodedMessage + "\n\n");

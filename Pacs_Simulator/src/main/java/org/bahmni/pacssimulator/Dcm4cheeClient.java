@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 
 public class Dcm4cheeClient extends DicomClient{
     private static final Logger log = Logger.getLogger(Dcm4cheeClient.class);
+    private static final String DCMSND_LOCATION = "/var/lib/bahmni/dcm4che-2.0.28/bin/";
 
     public Dcm4cheeClient(String dcm4cheePostInstanceUrl) {
         super(dcm4cheePostInstanceUrl);
@@ -15,14 +16,22 @@ public class Dcm4cheeClient extends DicomClient{
 
     @Override
     public void post(File dicomFile) throws IOException, URISyntaxException, InterruptedException {
+        String dcmsndPath = System.getProperty("dcmsnd_path");
+        if (dcmsndPath != null && !"".equals(dcmsndPath)) {
+            log.info("Using dcmsnd command path specified: " + dcmsndPath);
+        } else {
+            log.info("Using default dcmsnd command path: " + DCMSND_LOCATION);
+            dcmsndPath = DCMSND_LOCATION;
+        }
+
         if (dicomPostURL == null || dicomPostURL.trim().length() == 0)
             return;
         Runtime run = Runtime.getRuntime();
         Process process = null;
-        String commandToRun = "/var/lib/bahmni/dcm4che-2.0.28/bin/dcmsnd "+ dicomPostURL + " " + dicomFile.getAbsolutePath();
+        String commandToRun = dcmsndPath + "dcmsnd " + dicomPostURL + " " + dicomFile.getAbsolutePath();
 
-        log.debug(commandToRun);
-        System.out.println(commandToRun);
+        log.info("Running command:" + commandToRun);
+        System.out.println("Running command:" + commandToRun);
         try {
 
             process = run.exec(commandToRun);

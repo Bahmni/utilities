@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -30,38 +29,13 @@ public class DicomFile {
         this.fileName = fileName;
     }
 
-    public File modifyDicomAsPerOrder(ORM_O01 ormMessage) throws URISyntaxException, IOException, DicomException {
-        UIDGenerator uidGenerator = new UIDGenerator();
-
-        InputStream resourceAsStream = this.getClass().getResourceAsStream(fileName);
-        DicomInputStream dicomInputStream = new DicomInputStream(ClassLoader.getSystemResourceAsStream(fileName));
-        DicomObject dicomObject = dicomInputStream.readDicomObject();
-
+    public File generateFor(ORM_O01 ormMessage) throws URISyntaxException, IOException, DicomException {
 //        String patientId = ormMessage.getPATIENT().getPID().getPatientID().getIDNumber().getValue();
         String patientId = ormMessage.getPATIENT().getPID().getPatientIdentifierList(0).getIDNumber().getValue();
         String givenName = ormMessage.getPATIENT().getPID().getPatientName(0).getGivenName().getValue();
         String familyName = ormMessage.getPATIENT().getPID().getPatientName(0).getFamilyName().getSurname().getValue();
         String orderId = ormMessage.getORDER().getORC().getPlacerOrderNumber().getEntityIdentifier().getValue();
-        String studyId = UUID.randomUUID().toString();
-        String instanceUid = uidGenerator.getNewSOPInstanceUID(studyId,"1","1").toString();
-        String seriesInstanceUid = uidGenerator.getNewSeriesInstanceUID(studyId, "1").toString();
-        String studyInstanceUid = uidGenerator.getNewStudyInstanceUID(studyId).toString();
-
-        dicomObject.putString(Tag.PatientName, VR.PN, givenName + " " + familyName);
-        dicomObject.putString(Tag.PatientID, VR.LO, patientId);
-        dicomObject.putString(Tag.AccessionNumber, VR.LO, orderId);
-        dicomObject.putString(Tag.StudyID, VR.LO, studyId);
-        dicomObject.putString(Tag.MediaStorageSOPInstanceUID, VR.UI, instanceUid);
-        dicomObject.putString(Tag.SOPInstanceUID, VR.UI, instanceUid);
-        dicomObject.putString(Tag.SeriesInstanceUID, VR.UI, seriesInstanceUid);
-        dicomObject.putString(Tag.StudyInstanceUID, VR.UI, studyInstanceUid);
-
-//        System.out.println("The Dicom file for patient"+patientId+givenName+familyName+orderId);
-//        System.out.println(dicomObject.toString());
-
-        dicomObject.putString(Tag.StudyDate, VR.DT, new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
-
-        return writeFile(dicomObject);
+        return generateFor(patientId, givenName, familyName, orderId);
     }
 
     public File writeFile(DicomObject dicomObject) {
@@ -87,5 +61,49 @@ public class DicomFile {
             }
         }
         return outputDicomFile;
+    }
+
+    public File generateFor(String patientId, String givenName, String familyName, String orderId) throws URISyntaxException, IOException, DicomException {
+        UIDGenerator uidGenerator = new UIDGenerator();
+
+        DicomInputStream dicomInputStream = new DicomInputStream(ClassLoader.getSystemResourceAsStream(fileName));
+        DicomObject dicomObject = dicomInputStream.readDicomObject();
+
+//        String patientId = ormMessage.getPATIENT().getPID().getPatientID().getIDNumber().getValue();
+        String studyId = UUID.randomUUID().toString();
+        String instanceUid = uidGenerator.getNewSOPInstanceUID(studyId,"1","1").toString();
+        String seriesInstanceUid = uidGenerator.getNewSeriesInstanceUID(studyId, "1").toString();
+        String studyInstanceUid = uidGenerator.getNewStudyInstanceUID(studyId).toString();
+
+        dicomObject.putString(Tag.PatientName, VR.PN, givenName + " " + familyName);
+        dicomObject.putString(Tag.PatientID, VR.LO, patientId);
+        dicomObject.putString(Tag.AccessionNumber, VR.LO, orderId);
+        dicomObject.putString(Tag.StudyID, VR.LO, studyId);
+        dicomObject.putString(Tag.MediaStorageSOPInstanceUID, VR.UI, instanceUid);
+        dicomObject.putString(Tag.SOPInstanceUID, VR.UI, instanceUid);
+        dicomObject.putString(Tag.SeriesInstanceUID, VR.UI, seriesInstanceUid);
+        dicomObject.putString(Tag.StudyInstanceUID, VR.UI, studyInstanceUid);
+
+//        System.out.println("The Dicom file for patient"+patientId+givenName+familyName+orderId);
+//        System.out.println(dicomObject.toString());
+
+        dicomObject.putString(Tag.StudyDate, VR.DT, new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
+
+        return writeFile(dicomObject);
+    }
+
+    public static void main(String[] args) {
+        DicomFile dicomFile = new DicomFile("U_2015_05_26_14_18_35.dcm");
+        File file = null;
+        try {
+            file = dicomFile.generateFor("GAN203006", "Rutgar", "Ragos", "ORD-307");
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (DicomException e) {
+            e.printStackTrace();
+        }
+        System.out.println(file.getAbsolutePath());
     }
 }
