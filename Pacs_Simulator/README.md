@@ -5,6 +5,9 @@ A simple DICOM AE simulator that can receive a ORM message and upload a dicom fi
 
 > mvn clean install -U assembly:single
 
+
+:warning: Check the name and location of the jar file before you run. Note the github release name of the jar maybe different
+
 ### Basic command to run
 > cd utilities/Pacs_Simulator
  
@@ -46,11 +49,7 @@ Example
 > ./dcmsnd DCM4CHEE@192.168.33.10:11112 /tmp/3bd0d47c-7794-4095-9170-357591454cbd.dcm -stgcmt -L DCMSND:11113
 
 You can pass other options too. Lookup for more options with dcmsnd command 
-> dcmsnd --help
-
-
-
- 
+> dcmsnd --help 
 
 
  
