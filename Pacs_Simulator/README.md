@@ -1,5 +1,14 @@
 A simple DICOM AE simulator that can receive a ORM message and upload a dicom file to PACS. 
 
+### Re-requisites
+pixelmed library version is no longer available on maven repos. version of jar is available under the lib directory.
+1. Build a local repo
+
+> cd utilities/Pacs_Simulator
+> mkdir local-maven-repo
+> mvn deploy:deploy-file -DgroupId=pixelmed -DartifactId=pixelmed -Dversion=20150809 -Durl=file:./local-maven-repo/ -DrepositoryId=local-maven-repo -DupdateReleaseInfo=true -Dfile=./lib/pixelmed-20150809.jar
+> ./build.sh     
+
 ### Build
 > cd utilities/Pacs_Simulator
 

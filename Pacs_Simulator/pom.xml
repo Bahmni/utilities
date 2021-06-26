@@ -103,8 +103,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <target>1.6</target>
-                    <source>1.6</source>
+                    <target>8</target>
+                    <source>8</source>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
@@ -131,6 +131,10 @@
 
 
     <repositories>
+        <repository>
+            <id>my-local-repo</id>
+            <url>file://${project.basedir}/myrepo</url>
+        </repository>
         <repository>
             <id>dcm4che</id>
             <name>dcm4che Repository</name>
@@ -182,9 +186,10 @@
             <!--</releases>-->
         </repository>
         <repository>
-            <id>my-local-repo</id>
-            <url>file://${basedir}/myrepo</url>
+            <id>local-maven-repo</id>
+            <url>file:///${project.basedir}/local-maven-repo</url>
         </repository>
+
     </repositories>
 
 </project>
