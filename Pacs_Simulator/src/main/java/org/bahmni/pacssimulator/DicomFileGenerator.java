@@ -5,9 +5,14 @@ import com.pixelmed.dicom.DicomException;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Random;
 
 public class DicomFileGenerator {
+
     public static void main(String[] args) {
+
+        String[] sampleFiles = { "U_2015_05_26_14_18_35.dcm", "U_2015_05_26_14_23_16.dcm"};
+        int i = new Random().nextInt(sampleFiles.length - 0) + 1;
 
         System.out.println("arguments passed: " + String.join(",", args));
 
@@ -15,6 +20,8 @@ public class DicomFileGenerator {
         String givenName = "Rutgar";
         String familyName = "Ragos";
         String accessionNumber = "ORD-307";
+        String dicomFilePath = sampleFiles[i-1];
+        //String dicomFilePath = "/Users/angshus/work/bahmni/utilities/Pacs_Simulator/0002.DCM";
 
         if (args.length > 0) {
             patientId = args[0];
@@ -27,12 +34,15 @@ public class DicomFileGenerator {
             if (args.length > 3) {
                 accessionNumber = args[3];
             }
+            if (args.length > 4) {
+                dicomFilePath = args[4];
+            }
         }
 
-        System.out.println(String.format("Creating sample DICOM file with patientId:%s, givenName:%s, familyName:%s, accessionNumber:%s",
-                patientId, givenName, familyName, accessionNumber));
+        System.out.println(String.format("Creating sample DICOM file with patientId:%s, givenName:%s, familyName:%s, accessionNumber:%s, file:%s",
+                patientId, givenName, familyName, accessionNumber, dicomFilePath));
         //loaded from classpath, so put file in resources directory
-        DicomFile dicomFile = new DicomFile("U_2015_05_26_14_18_35.dcm");
+        DicomFile dicomFile = new DicomFile(dicomFilePath);
         File file = null;
         try {
             file = dicomFile.generateFor(patientId, givenName, familyName, accessionNumber);

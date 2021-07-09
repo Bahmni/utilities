@@ -40,11 +40,11 @@ You may also generate a sample DICOM file with minimum patient detail and relate
 This is useful when you do not want to run the simulator, but want to upload a DICOM file manually using "dcmsnd" command yourself.
 
 
-> java -cp target/pacssimulator-1.0-SNAPSHOT-jar-with-dependencies.jar org.bahmni.pacssimulator.DicomFileGenerator [patientId] [givenName] [familyName] [accessionNumber]
+> java -cp target/pacssimulator-1.0-SNAPSHOT-jar-with-dependencies.jar org.bahmni.pacssimulator.DicomFileGenerator [patientId] [givenName] [familyName] [accessionNumber] [filepath]
 
 example
 
-> java -cp target/pacssimulator-1.0-SNAPSHOT-jar-with-dependencies.jar org.bahmni.pacssimulator.DicomFileGenerator GAN123 Gajendra Singh ORD-309
+> java -cp target/pacssimulator-1.0-SNAPSHOT-jar-with-dependencies.jar org.bahmni.pacssimulator.DicomFileGenerator GAN123 Gajendra Singh ORD-309 /tmp/test.dcm
 
 The above should tell you the location of the generated file. 
 
