@@ -86,7 +86,7 @@ public class DicomFile {
             String instanceUid = uidGenerator.getNewSOPInstanceUID(studyId, "1", "1").toString();
             String seriesInstanceUid = uidGenerator.getNewSeriesInstanceUID(studyId, "1").toString();
             String studyInstanceUid = uidGenerator.getNewStudyInstanceUID(studyId).toString();
-
+            System.out.println("Study ID: " + dicomObject.getString(Tag.StudyInstanceUID));
             dicomObject.putString(Tag.PatientName, VR.PN, givenName + " " + familyName);
             dicomObject.putString(Tag.PatientID, VR.LO, patientId);
             dicomObject.putString(Tag.AccessionNumber, VR.LO, orderId);
