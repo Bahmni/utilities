@@ -20,11 +20,10 @@ pixelmed library version is no longer available on maven repos. version of jar i
 ### Basic command to run
 > cd utilities/Pacs_Simulator
  
-> java -Ddcmsnd_path=/path-to-dcmsnd-cmd/ -jar target/pacssimulator-1.0-SNAPSHOT-jar-with-dependencies.jar 8087 20000 dcm4chee DCM4CHEE@192.168.33.10:11112
+> java -Ddcmsnd_path=/path-to-dcmsnd-cmd/ -jar target/pacssimulator-1.0.0-jar-with-dependencies.jar 8087 20000 dcm4chee DCM4CHEE@192.168.33.10:11112
 
 
 In the above:
-
 * 8087 - is the listening port
 * 20000 - is connection timeout in milisec
 * dcm4chee - is the PACS server type. possible values are dcm4chee or orthanc
@@ -33,6 +32,7 @@ In the above:
 Note, while sending to DCM4CHEE it is required that you have the "dcmsnd" utility command in your local path. 
 You can do so like above passing through system parameter "dcmsnd_path". If not passed, then default path /var/lib/bahmni/dcm4che-2.0.28/bin/ will be used. Notice the trailing slash "/" that must be passed. 
 
+Also note, the jar file name "pacssimulator-1.0.0-jar-with-dependencies.jar" maybe different. Please check your build.
 
 ### Generate a DICOM file with minimum details
 You may also generate a sample DICOM file with minimum patient detail and related to an accession number by using the DicomFileGenerator.java. 
@@ -40,13 +40,16 @@ You may also generate a sample DICOM file with minimum patient detail and relate
 This is useful when you do not want to run the simulator, but want to upload a DICOM file manually using "dcmsnd" command yourself.
 
 
-> java -cp target/pacssimulator-1.0-SNAPSHOT-jar-with-dependencies.jar org.bahmni.pacssimulator.DicomFileGenerator [patientId] [givenName] [familyName] [accessionNumber] [filepath]
+> java -cp target/pacssimulator-1.0.0-jar-with-dependencies.jar org.bahmni.pacssimulator.DicomFileGenerator [patientId] [givenName] [familyName] [accessionNumber] [filepath]
 
 example
 
-> java -cp target/pacssimulator-1.0-SNAPSHOT-jar-with-dependencies.jar org.bahmni.pacssimulator.DicomFileGenerator GAN123 Gajendra Singh ORD-309 /tmp/test.dcm
+> java -cp target/pacssimulator-1.0.0-jar-with-dependencies.jar org.bahmni.pacssimulator.DicomFileGenerator GAN123 Gajendra Singh ORD-309 /tmp/test.dcm
 
-The above should tell you the location of the generated file. 
+The above should tell you the location of the generated file.
+Note in the above command, you may also pass an index of sample files which are bundled with the library. 
+
+> java -cp target/pacssimulator-1.0.0-jar-with-dependencies.jar org.bahmni.pacssimulator.DicomFileGenerator GAN123 Gajendra Singh ORD-309 0 
 
 You can then take the file and use "dcmsnd" command manually to send the file. But before that
 1. In DCM4CHEE, create an AE (Application Entity) with name "DCMSND" and port "11113" (can be anything, make sure AE and port is not already in use)

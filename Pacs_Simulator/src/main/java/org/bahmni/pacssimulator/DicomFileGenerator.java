@@ -21,7 +21,6 @@ public class DicomFileGenerator {
         String familyName = "Ragos";
         String accessionNumber = "ORD-307";
         String dicomFilePath = sampleFiles[i-1];
-        //String dicomFilePath = "/Users/angshus/work/bahmni/utilities/Pacs_Simulator/0002.DCM";
 
         if (args.length > 0) {
             patientId = args[0];
@@ -35,7 +34,18 @@ public class DicomFileGenerator {
                 accessionNumber = args[3];
             }
             if (args.length > 4) {
-                dicomFilePath = args[4];
+                String fileRef = args[4];
+                try {
+                    int index = Integer.parseInt(fileRef);
+                    if (index >= sampleFiles.length) {
+                        System.out.println("Passed image index is invalid. Please make sure that its within - " + sampleFiles.length);
+                        return;
+                    }
+                    dicomFilePath = sampleFiles[index];
+                } catch (NumberFormatException nfe) {
+                    System.out.println("Index parameter is not a number. Checking if its an available file");
+                    dicomFilePath = fileRef;
+                }
             }
         }
 
