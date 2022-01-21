@@ -5,13 +5,14 @@ import ca.uhn.hl7v2.HapiContext;
 import ca.uhn.hl7v2.app.Connection;
 import ca.uhn.hl7v2.app.ConnectionListener;
 import ca.uhn.hl7v2.app.HL7Service;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 
 public class HL7Simulator {
-    private static final org.apache.log4j.Logger log = Logger.getLogger(HL7Simulator.class);
+    private static final Logger log = LogManager.getLogger(HL7Simulator.class);
 
     private final int port;
     private final int timeout;
@@ -69,12 +70,12 @@ public class HL7Simulator {
                 new ConnectionListener() {
                     @Override
                     public void connectionReceived(Connection connection) {
-                        log.debug("New connection received: " + connection.getRemoteAddress().toString());
+                        log.debug("New connection received: {}", connection.getRemoteAddress().toString());
                     }
 
                     @Override
                     public void connectionDiscarded(Connection connection) {
-                        log.debug("Lost connection from: " + connection.getRemoteAddress().toString());
+                        log.debug("Lost connection from: {}", connection.getRemoteAddress().toString());
                     }
                 });
 

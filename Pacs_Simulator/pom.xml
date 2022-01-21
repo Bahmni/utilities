@@ -9,7 +9,7 @@
     <version>1.0.0</version>
 
     <properties>
-        <log4jVersion>1.2.17</log4jVersion>
+        <log4jVersion>2.17.1</log4jVersion>
         <slf4jVersion>1.7.12</slf4jVersion>
         <hapi-base.version>2.2</hapi-base.version>
         <dcm4cheVersion>2.0.28</dcm4cheVersion>
@@ -44,8 +44,13 @@
             <version>${slf4jVersion}</version>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4jVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
             <version>${log4jVersion}</version>
         </dependency>
 
