@@ -1,14 +1,13 @@
 package org.bahmni.pacssimulator;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 public class Dcm4cheeClient extends DicomClient{
-    private static final Logger log = LogManager.getLogger(Dcm4cheeClient.class);
+    private static final Logger log = Logger.getLogger(Dcm4cheeClient.class);
     private static final String DCMSND_LOCATION = "/var/lib/bahmni/dcm4che-2.0.28/bin/";
 
     public Dcm4cheeClient(String dcm4cheePostInstanceUrl) {
@@ -19,9 +18,9 @@ public class Dcm4cheeClient extends DicomClient{
     public void post(File dicomFile) throws IOException, URISyntaxException, InterruptedException {
         String dcmsndPath = System.getProperty("dcmsnd_path");
         if (dcmsndPath != null && !"".equals(dcmsndPath)) {
-            log.info("Using dcmsnd command path specified: {}", dcmsndPath);
+            log.info("Using dcmsnd command path specified: " + dcmsndPath);
         } else {
-            log.info("Using default dcmsnd command path: {}", DCMSND_LOCATION);
+            log.info("Using default dcmsnd command path: " + DCMSND_LOCATION);
             dcmsndPath = DCMSND_LOCATION;
         }
 
@@ -31,7 +30,7 @@ public class Dcm4cheeClient extends DicomClient{
         Process process = null;
         String commandToRun = dcmsndPath + "dcmsnd " + dicomPostURL + " " + dicomFile.getAbsolutePath();
 
-        log.info("Running command:{}", commandToRun);
+        log.info("Running command:" + commandToRun);
         System.out.println("Running command:" + commandToRun);
         try {
 
