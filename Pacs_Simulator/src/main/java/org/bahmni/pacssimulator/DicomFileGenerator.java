@@ -6,12 +6,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Random;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class DicomFileGenerator {
 
-    private static final Logger log = LogManager.getLogger(Dcm4cheeClient.class);
     public static void main(String[] args) {
 
         String[] sampleFiles = { "U_2015_05_26_14_18_35.dcm", "U_2015_05_26_14_23_16.dcm"};
