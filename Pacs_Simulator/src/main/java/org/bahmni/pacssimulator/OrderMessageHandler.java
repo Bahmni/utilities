@@ -6,7 +6,8 @@ import ca.uhn.hl7v2.model.v25.message.*;
 import ca.uhn.hl7v2.protocol.ReceivingApplication;
 import ca.uhn.hl7v2.protocol.ReceivingApplicationException;
 import com.pixelmed.dicom.DicomException;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +21,7 @@ import java.util.*;
  */
 public class OrderMessageHandler implements ReceivingApplication {
     private static final String CANCELLED = "CA";
-    private static final Logger log = Logger.getLogger(OrderMessageHandler.class);
+    private static final Logger log = LogManager.getLogger(OrderMessageHandler.class);
 
     private DicomClient dicomClient;
 

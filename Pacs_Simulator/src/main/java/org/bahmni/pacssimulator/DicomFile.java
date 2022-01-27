@@ -3,7 +3,8 @@ package org.bahmni.pacssimulator;
 import ca.uhn.hl7v2.model.v25.message.ORM_O01;
 import com.pixelmed.dicom.DicomException;
 import com.pixelmed.dicom.UIDGenerator;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 import org.dcm4che2.data.DicomObject;
 import org.dcm4che2.data.Tag;
 import org.dcm4che2.data.VR;
@@ -24,7 +25,7 @@ import java.util.Date;
 import java.util.UUID;
 
 public class DicomFile {
-    private static final Logger log = Logger.getLogger(DicomFile.class);
+    private static final Logger log = LogManager.getLogger(DicomFile.class);
 
     private String fileName;
 
