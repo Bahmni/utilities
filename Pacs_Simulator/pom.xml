@@ -138,12 +138,12 @@
         <repository>
             <id>dcm4che</id>
             <name>dcm4che Repository</name>
-            <url>http://www.dcm4che.org/maven2</url>
+            <url>https://www.dcm4che.org/maven2</url>
         </repository>
         <repository>
             <id>hapi-sf</id>
             <name>HAPI Sourceforge Repository</name>
-            <url>http://hl7api.sourceforge.net/m2</url>
+            <url>https://hl7api.sourceforge.net/m2</url>
         </repository>
         <repository>
             <id>sonatype-nexus-snapshots</id>
