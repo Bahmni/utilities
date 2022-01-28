@@ -8,14 +8,15 @@ import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.entity.mime.content.FileBody;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 public class OrthancClient extends DicomClient{
-    private static final Logger log = Logger.getLogger(OrthancClient.class);
+    private static final Logger log = LogManager.getLogger(OrthancClient.class);
 
     public OrthancClient(String orthancPostInstanceUrl) {
         super(orthancPostInstanceUrl);

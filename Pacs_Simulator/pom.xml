@@ -9,7 +9,7 @@
     <version>1.0.0</version>
 
     <properties>
-        <log4jVersion>1.2.17</log4jVersion>
+        <log4jVersion>2.17.1</log4jVersion>
         <slf4jVersion>1.7.12</slf4jVersion>
         <hapi-base.version>2.2</hapi-base.version>
         <dcm4cheVersion>2.0.28</dcm4cheVersion>
@@ -44,9 +44,16 @@
             <version>${slf4jVersion}</version>
         </dependency>
         <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
             <version>${log4jVersion}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>${log4jVersion}</version>
+            <scope>provided</scope>
         </dependency>
 
         <!--Dcm4chee toolkit dependencies for dcmof, hl7snd and dcmrcv (never used)-->
@@ -138,12 +145,12 @@
         <repository>
             <id>dcm4che</id>
             <name>dcm4che Repository</name>
-            <url>http://www.dcm4che.org/maven2</url>
+            <url>https://www.dcm4che.org/maven2</url>
         </repository>
         <repository>
             <id>hapi-sf</id>
             <name>HAPI Sourceforge Repository</name>
-            <url>http://hl7api.sourceforge.net/m2</url>
+            <url>https://hl7api.sourceforge.net/m2</url>
         </repository>
         <repository>
             <id>sonatype-nexus-snapshots</id>

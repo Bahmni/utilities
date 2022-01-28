@@ -1,13 +1,14 @@
 package org.bahmni.pacssimulator;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 public class Dcm4cheeClient extends DicomClient{
-    private static final Logger log = Logger.getLogger(Dcm4cheeClient.class);
+    private static final Logger log = LogManager.getLogger(Dcm4cheeClient.class);
     private static final String DCMSND_LOCATION = "/var/lib/bahmni/dcm4che-2.0.28/bin/";
 
     public Dcm4cheeClient(String dcm4cheePostInstanceUrl) {

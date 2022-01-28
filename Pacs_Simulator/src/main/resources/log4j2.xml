@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Configuration xmlns="http://logging.apache.org/log4j/2.0/config">
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%%d Thread: %t %-5p [%c] %m%n "/>
+        </Console>
+        <RollingFile name="fileAppender"
+                     fileName="logs/hl7.log"
+                     filePattern="logs/hl7.log.%i">
+            <PatternLayout pattern="%d %-5p [%c] %m%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="fileAppender"/>
+        </Root>
+    </Loggers>
+</Configuration>
