@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-      - BAH-2056
     paths:
       - 'Pacs_Simulator/**'
       - '.github/workflows/pacs_simulator_build_publish.yml'
