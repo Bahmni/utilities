@@ -1,0 +1,29 @@
+name: Pacs Simulator Validate PR
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - 'Pacs_Simulator/**'
+
+defaults:
+  run:
+    working-directory: Pacs_Simulator
+
+jobs:
+  build:
+    name: Test & Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Java 8
+        uses: actions/setup-java@v2
+        with:
+          distribution: "zulu"
+          java-version: "8"
+      - name: Setup Local Dependencies
+        run: |
+          mkdir local-maven-repo
+          ./mvnw deploy:deploy-file -DgroupId=pixelmed -DartifactId=pixelmed -Dversion=20150809 -Durl=file:./local-maven-repo/ -DrepositoryId=local-maven-repo -DupdateReleaseInfo=true -Dfile=./lib/pixelmed-20150809.jar
+      - name: Run Unit Tests and Package
+        run: ./mvnw --no-transfer-progress clean install -U assembly:single
