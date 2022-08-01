@@ -43,7 +43,7 @@ public class DicomFile {
     }
 
     public File writeFile(DicomObject dicomObject) {
-        String randomFileName = UUID.randomUUID().toString()+".dcm";
+        String randomFileName = UUID.randomUUID().toString() + ".dcm";
         File outputDicomFile = new File(randomFileName);
         FileOutputStream fileOutputStream;
         try {
@@ -75,7 +75,7 @@ public class DicomFile {
         } else {
             inputStream = ClassLoader.getSystemResourceAsStream(fileName);
         }
-        if  (inputStream == null) {
+        if (inputStream == null) {
             throw new RuntimeException("Could not load file");
         }
         try {
@@ -99,8 +99,11 @@ public class DicomFile {
 
             //        System.out.println("The Dicom file for patient"+patientId+givenName+familyName+orderId);
             //        System.out.println(dicomObject.toString());
+            Date currentDate = new Date();
+            dicomObject.putString(Tag.StudyDate, VR.DT, new SimpleDateFormat("yyyyMMdd").format(currentDate));
+            dicomObject.putString(Tag.StudyTime, VR.TM, new SimpleDateFormat("HHmmss").format(currentDate));
+            dicomObject.putString(Tag.StudyDescription, VR.LO, "Sample DICOM Image from PACS Simulator");
 
-            dicomObject.putString(Tag.StudyDate, VR.DT, new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()));
             return writeFile(dicomObject);
         } finally {
             inputStream.close();
