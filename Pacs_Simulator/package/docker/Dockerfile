@@ -12,6 +12,8 @@ RUN curl -o wait-for.sh 'https://raw.githubusercontent.com/eficode/wait-for/v2.2
 RUN chmod +x wait-for.sh
 COPY package/docker/scripts/startup.sh startup.sh
 RUN chmod +x startup.sh
+COPY package/docker/scripts/upload.sh upload.sh
+RUN chmod +x upload.sh
 RUN rm -rf /tmp/artifacts
 
 CMD ["./startup.sh"]
