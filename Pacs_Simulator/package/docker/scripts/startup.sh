@@ -21,13 +21,16 @@ wait_for_tables() {
   done
 }
 
-echo "Waiting for ${PACS_INTEGRATION_DB_HOST}.."
-sh wait-for.sh -t 300 "${PACS_INTEGRATION_DB_HOST}":"${PACS_INTEGRATION_DB_PORT}"
+if [ "${UPDATE_PACS_INTEGRATION_DB}" = "true" ]
+then
+  echo "Waiting for ${PACS_INTEGRATION_DB_HOST}.."
+  sh wait-for.sh -t 300 "${PACS_INTEGRATION_DB_HOST}":"${PACS_INTEGRATION_DB_PORT}"
 
-wait_for_tables
-echo "[INFO] Adding modality and order_type entries.."
-run_postgres_command "INSERT into modality VALUES (1, 'DCM4CHEE','DCM4CHEE PACS', 'pacs-simulator', 9000, 3000) ON CONFLICT (id) DO UPDATE set ip='pacs-simulator',port='9000';"
-run_postgres_command "INSERT into order_type values(1, 'Radiology Order', 1) ON CONFLICT (id) DO UPDATE set name='Radiology Order',modality_id=1;"
+  wait_for_tables
+  echo "[INFO] Adding modality and order_type entries.."
+  run_postgres_command "INSERT into modality VALUES (1, 'DCM4CHEE','DCM4CHEE PACS', 'pacs-simulator', 9000, 3000) ON CONFLICT (id) DO UPDATE set ip='pacs-simulator',port='9000';"
+  run_postgres_command "INSERT into order_type values(1, 'Radiology Order', 1) ON CONFLICT (id) DO UPDATE set name='Radiology Order',modality_id=1;"
+fi
 
 echo "[INFO] Starting PACS Simulator..."
 java -jar /var/lib/bahmni/pacs-simulator.jar "9000" "${PACS_SIMULATOR_TIMEOUT:=20000}" "${PACS_SERVER_TYPE:=dcm4chee}" "${PACS_SERVER_URL}"
