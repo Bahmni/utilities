@@ -1,9 +1,9 @@
-FROM openjdk:8-alpine
+FROM amazoncorretto:8
 
 RUN mkdir -p /tmp/artifacts
 RUN mkdir -p /var/lib/bahmni
 
-RUN apk add curl postgresql-client
+RUN  yum install -y postgresql nc unzip
 
 RUN curl -L -o /tmp/artifacts/dcmsnd.zip https://sourceforge.net/projects/dcm4che/files/dcm4che2/2.0.28/dcm4che-2.0.28-bin.zip/download
 RUN unzip -d /var/lib/bahmni /tmp/artifacts/dcmsnd.zip
