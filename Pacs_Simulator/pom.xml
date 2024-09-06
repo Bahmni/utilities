@@ -6,7 +6,7 @@
 
     <groupId>org.bahmni</groupId>
     <artifactId>pacssimulator</artifactId>
-    <version>1.1.0-SNAPSHOT</version>
+    <version>1.1.0</version>
 
     <properties>
         <log4jVersion>2.23.1</log4jVersion>
