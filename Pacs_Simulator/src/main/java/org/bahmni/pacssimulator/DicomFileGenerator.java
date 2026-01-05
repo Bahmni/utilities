@@ -55,7 +55,7 @@ public class DicomFileGenerator {
         DicomFile dicomFile = new DicomFile(dicomFilePath);
         File file = null;
         try {
-            file = dicomFile.generateFor(patientId, givenName, familyName, accessionNumber);
+            file = dicomFile.generateFor(patientId, givenName, familyName, accessionNumber, null);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         } catch (IOException e) {

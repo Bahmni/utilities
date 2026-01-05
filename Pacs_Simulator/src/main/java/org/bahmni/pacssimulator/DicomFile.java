@@ -1,6 +1,7 @@
 package org.bahmni.pacssimulator;
 
 import ca.uhn.hl7v2.model.v25.message.ORM_O01;
+import ca.uhn.hl7v2.util.StringUtil;
 import com.pixelmed.dicom.DicomException;
 import com.pixelmed.dicom.UIDGenerator;
 import org.apache.logging.log4j.Logger;
@@ -39,7 +40,8 @@ public class DicomFile {
         String givenName = ormMessage.getPATIENT().getPID().getPatientName(0).getGivenName().getValue();
         String familyName = ormMessage.getPATIENT().getPID().getPatientName(0).getFamilyName().getSurname().getValue();
         String orderId = ormMessage.getORDER().getORC().getPlacerOrderNumber().getEntityIdentifier().getValue();
-        return generateFor(patientId, givenName, familyName, orderId);
+        String studyUID = HL7Utils.getStudyInstanceUID(ormMessage);
+        return generateFor(patientId, givenName, familyName, orderId, studyUID);
     }
 
     public File writeFile(DicomObject dicomObject) {
@@ -67,7 +69,7 @@ public class DicomFile {
         return outputDicomFile;
     }
 
-    public File generateFor(String patientId, String givenName, String familyName, String orderId) throws URISyntaxException, IOException, DicomException {
+    public File generateFor(String patientId, String givenName, String familyName, String orderId, String studyUID) throws URISyntaxException, IOException, DicomException {
         File someFile = Paths.get(fileName).toFile();
         InputStream inputStream;
         if (someFile.exists()) {
@@ -86,8 +88,8 @@ public class DicomFile {
             String studyId = UUID.randomUUID().toString();
             String instanceUid = uidGenerator.getNewSOPInstanceUID(studyId, "1", "1").toString();
             String seriesInstanceUid = uidGenerator.getNewSeriesInstanceUID(studyId, "1").toString();
-            String studyInstanceUid = uidGenerator.getNewStudyInstanceUID(studyId).toString();
-            System.out.println("Study ID: " + dicomObject.getString(Tag.StudyInstanceUID));
+            String studyInstanceUid = StringUtil.isNotBlank(studyUID) ? studyUID : uidGenerator.getNewStudyInstanceUID(studyId).toString();
+            System.out.println("Study ID: " + studyInstanceUid);
             dicomObject.putString(Tag.PatientName, VR.PN, givenName + " " + familyName);
             dicomObject.putString(Tag.PatientID, VR.LO, patientId);
             dicomObject.putString(Tag.AccessionNumber, VR.LO, orderId);
@@ -114,7 +116,7 @@ public class DicomFile {
         DicomFile dicomFile = new DicomFile("U_2015_05_26_14_18_35.dcm");
         File file = null;
         try {
-            file = dicomFile.generateFor("GAN203006", "Rutgar", "Ragos", "ORD-307");
+            file = dicomFile.generateFor("GAN203006", "Rutgar", "Ragos", "ORD-307", null);
         } catch (URISyntaxException e) {
             e.printStackTrace();
         } catch (IOException e) {

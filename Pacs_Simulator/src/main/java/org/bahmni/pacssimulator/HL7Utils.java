@@ -18,6 +18,7 @@ import ca.uhn.hl7v2.*;
 import ca.uhn.hl7v2.model.*;
 import ca.uhn.hl7v2.model.v25.message.*;
 import ca.uhn.hl7v2.model.v25.segment.*;
+import ca.uhn.hl7v2.util.Terser;
 
 import java.text.*;
 import java.util.*;
@@ -65,6 +66,20 @@ public class HL7Utils {
         ack.getMSA().getTextMessage().setValue(errorMessage);
 
         return ack;
+    }
+
+    public static String getStudyInstanceUID(ORM_O01 ormO01Message) {
+        Terser terser = new Terser(ormO01Message);
+        try {
+            String studyUID = terser.get("/ORDER/ORDER_DETAIL/ZDS-1");
+            System.out.printf("Retrieved STUDY UID: %s from HL7 Message%n", studyUID);
+            return studyUID;
+        } catch (Exception e) {
+            System.out.println("Unable to retrieve study instance UID from message");
+            System.out.println(e.getMessage());
+        }
+
+        return null;
     }
 
 }
