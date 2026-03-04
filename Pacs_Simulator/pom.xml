@@ -135,18 +135,18 @@
     </build>
 
 
-    <repositories>
-        <repository>
-            <id>my-local-repo</id>
-            <url>file://${project.basedir}/myrepo</url>
-        
     <licenses>
         <license>
             <name>MIT License</name>
             <url>https://opensource.org/licenses/MIT</url>
         </license>
     </licenses>
-    </repository>
+
+    <repositories>
+        <repository>
+            <id>my-local-repo</id>
+            <url>file://${project.basedir}/myrepo</url>
+        </repository>
         <repository>
             <id>dcm4che</id>
             <name>dcm4che Repository</name>
